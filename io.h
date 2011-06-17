@@ -12,37 +12,44 @@
 * The module socket.h implements this interface, and thus the module tcp.h
 * is very simple.
 *
-* RCS ID: $Id: io.h,v 1.3 2003/06/26 18:47:46 diego Exp $
+* RCS ID: $Id: io.h,v 1.9 2004/07/26 04:03:55 diego Exp $
 \*=========================================================================*/
 #include <stdio.h>
 #include <lua.h>
 
+#include "timeout.h"
+
 /* IO error codes */
 enum {
-    IO_DONE,            /* operation completed successfully */
-    IO_TIMEOUT,         /* operation timed out */
-    IO_CLOSED,          /* the connection has been closed */
-    IO_ERROR,           /* something wrong... */
-    IO_REFUSED,         /* transfer has been refused */
-    IO_LIMITED          /* maximum number of bytes reached */
+    IO_DONE = 0,        /* operation completed successfully */
+    IO_TIMEOUT = -1,    /* operation timed out */
+    IO_CLOSED = -2,     /* the connection has been closed */
+    IO_CLIPPED = -3,    /* maxium bytes count reached */
+	IO_UNKNOWN = -4
 };
+
+/* interface to error message function */
+typedef const char *(*p_error) (
+    void *ctx,          /* context needed by send */
+    int err             /* error code */
+);
 
 /* interface to send function */
 typedef int (*p_send) (
-    void *ctx,          /* context needed by send */ 
+    void *ctx,          /* context needed by send */
     const char *data,   /* pointer to buffer with data to send */
     size_t count,       /* number of bytes to send from buffer */
     size_t *sent,       /* number of bytes sent uppon return */
-    int timeout         /* number of miliseconds left for transmission */
+    p_tm tm             /* timeout control */
 );
- 
+
 /* interface to recv function */
 typedef int (*p_recv) (
-    void *ctx,          /* context needed by recv */ 
+    void *ctx,          /* context needed by recv */
     char *data,         /* pointer to buffer where data will be writen */
     size_t count,       /* number of bytes to receive into buffer */
     size_t *got,        /* number of bytes received uppon return */
-    int timeout         /* number of miliseconds left for transmission */
+    p_tm tm             /* timeout control */
 );
 
 /* IO driver definition */
@@ -50,10 +57,12 @@ typedef struct t_io_ {
     void *ctx;          /* context needed by send/recv */
     p_send send;        /* send function pointer */
     p_recv recv;        /* receive function pointer */
+    p_error error;      /* strerror function */
 } t_io;
 typedef t_io *p_io;
 
-void io_pusherror(lua_State *L, int code);
-void io_init(p_io io, p_send send, p_recv recv, void *ctx);
+void io_init(p_io io, p_send send, p_recv recv, p_error error, void *ctx);
+const char *io_strerror(int err);
 
 #endif /* IO_H */
+

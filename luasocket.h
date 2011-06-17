@@ -6,19 +6,14 @@
 * Diego Nehab
 * 9/11/1999
 *
-* RCS ID: $Id: luasocket.h,v 1.10 2003/06/26 18:47:46 diego Exp $
+* RCS ID: $Id: luasocket.h,v 1.17 2004/07/26 04:03:55 diego Exp $
 \*=========================================================================*/
 #include <lua.h>
 
 /*-------------------------------------------------------------------------*\
 * Current luasocket version
 \*-------------------------------------------------------------------------*/
-#define LUASOCKET_VERSION "LuaSocket 2.0 (alpha)"
-
-/*-------------------------------------------------------------------------*\
-* Library's namespace
-\*-------------------------------------------------------------------------*/
-#define LUASOCKET_LIBNAME "socket"
+#define LUASOCKET_VERSION "LuaSocket 2.0 (beta2)"
 
 /*-------------------------------------------------------------------------*\
 * This macro prefixes all exported API functions

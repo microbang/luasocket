@@ -14,7 +14,7 @@
 * tcp objects either connected to some address or returned by the accept
 * method of a server object.
 *
-* RCS ID: $Id: tcp.h,v 1.3 2003/06/26 18:47:47 diego Exp $
+* RCS ID: $Id: tcp.h,v 1.5 2004/02/04 14:29:10 diego Exp $
 \*=========================================================================*/
 #include <lua.h>
 
@@ -28,8 +28,9 @@ typedef struct t_tcp_ {
     t_buf buf;
     t_tm tm;
 } t_tcp;
+
 typedef t_tcp *p_tcp;
 
-void tcp_open(lua_State *L);
+int tcp_open(lua_State *L);
 
 #endif /* TCP_H */

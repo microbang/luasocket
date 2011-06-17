@@ -2,8 +2,9 @@
 -- UDP sample: daytime protocol client
 -- LuaSocket sample files
 -- Author: Diego Nehab
--- RCS ID: $Id: daytimeclnt.lua,v 1.7 2003/08/16 00:06:04 diego Exp $
+-- RCS ID: $Id: daytimeclnt.lua,v 1.11 2004/06/21 06:07:57 diego Exp $
 -----------------------------------------------------------------------------
+local socket = require"socket"
 host = host or "127.0.0.1"
 port = port or 13
 if arg then
@@ -14,8 +15,9 @@ host = socket.dns.toip(host)
 udp = socket.udp()
 print("Using host '" ..host.. "' and port " ..port.. "...")
 udp:setpeername(host, port)
+udp:settimeout(3)
 sent, err = udp:send("anything")
-if err then print(err) exit() end
+if err then print(err) os.exit() end
 dgram, err = udp:receive()
-if not dgram then print(err) exit() end
+if not dgram then print(err) os.exit() end
 io.write(dgram)

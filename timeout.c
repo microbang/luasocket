@@ -2,7 +2,7 @@
 * Timeout management functions
 * LuaSocket toolkit
 *
-* RCS ID: $Id: timeout.c,v 1.10 2003/08/16 00:06:04 diego Exp $
+* RCS ID: $Id: timeout.c,v 1.25 2004/07/16 06:48:48 diego Exp $
 \*=========================================================================*/
 #include <stdio.h>
 
@@ -13,22 +13,29 @@
 #include "auxiliar.h"
 #include "timeout.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
-#include <sys/times.h>
 #include <time.h>
-#include <unistd.h>
+#include <sys/time.h>
+#endif
+
+/* min and max macros */
+#ifndef MIN
+#define MIN(x, y) ((x) < (y) ? x : y)
+#endif
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? x : y)
 #endif
 
 /*=========================================================================*\
 * Internal function prototypes
 \*=========================================================================*/
-static int tm_lua_time(lua_State *L);
+static int tm_lua_gettime(lua_State *L);
 static int tm_lua_sleep(lua_State *L);
 
 static luaL_reg func[] = {
-    { "time", tm_lua_time },
+    { "gettime", tm_lua_gettime },
     { "sleep", tm_lua_sleep },
     { NULL, NULL }
 };
@@ -39,47 +46,65 @@ static luaL_reg func[] = {
 /*-------------------------------------------------------------------------*\
 * Initialize structure
 \*-------------------------------------------------------------------------*/
-void tm_init(p_tm tm, int block, int total)
-{
+void tm_init(p_tm tm, double block, double total) {
     tm->block = block;
     tm->total = total;
 }
 
 /*-------------------------------------------------------------------------*\
-* Set and get timeout limits
-\*-------------------------------------------------------------------------*/
-void tm_setblock(p_tm tm, int block)
-{ tm->block = block; }
-void tm_settotal(p_tm tm, int total)
-{ tm->total = total; }
-int tm_getblock(p_tm tm)
-{ return tm->block; }
-int tm_gettotal(p_tm tm)
-{ return tm->total; }
-int tm_getstart(p_tm tm)
-{ return tm->start; }
-
-/*-------------------------------------------------------------------------*\
-* Determines how much time we have left for the current operation
+* Determines how much time we have left for the next system call,
+* if the previous call was successful 
 * Input
 *   tm: timeout control structure
 * Returns
 *   the number of ms left or -1 if there is no time limit
 \*-------------------------------------------------------------------------*/
-int tm_get(p_tm tm)
-{
-    /* no timeout */
-    if (tm->block < 0 && tm->total < 0)
+double tm_get(p_tm tm) {
+    if (tm->block < 0.0 && tm->total < 0.0) {
         return -1;
-    /* there is no block timeout, we use the return timeout */
-    else if (tm->block < 0)
-        return MAX(tm->total - tm_gettime() + tm->start, 0);
-    /* there is no return timeout, we use the block timeout */
-    else if (tm->total < 0) 
+    } else if (tm->block < 0.0) {
+        double t = tm->total - tm_gettime() + tm->start;
+        return MAX(t, 0.0);
+    } else if (tm->total < 0.0) {
         return tm->block;
-    /* both timeouts are specified */
-    else return MIN(tm->block, 
-            MAX(tm->total - tm_gettime() + tm->start, 0));
+    } else {
+        double t = tm->total - tm_gettime() + tm->start;
+        return MIN(tm->block, MAX(t, 0.0));
+    }
+}
+
+/*-------------------------------------------------------------------------*\
+* Returns time since start of operation
+* Input
+*   tm: timeout control structure
+* Returns
+*   start field of structure
+\*-------------------------------------------------------------------------*/
+double tm_getstart(p_tm tm) {
+    return tm->start;
+}
+
+/*-------------------------------------------------------------------------*\
+* Determines how much time we have left for the next system call,
+* if the previous call was a failure
+* Input
+*   tm: timeout control structure
+* Returns
+*   the number of ms left or -1 if there is no time limit
+\*-------------------------------------------------------------------------*/
+double tm_getretry(p_tm tm) {
+    if (tm->block < 0.0 && tm->total < 0.0) {
+        return -1;
+    } else if (tm->block < 0.0) {
+        double t = tm->total - tm_gettime() + tm->start;
+        return MAX(t, 0.0);
+    } else if (tm->total < 0.0) {
+        double t = tm->block - tm_gettime() + tm->start;
+        return MAX(t, 0.0);
+    } else {
+        double t = tm->total - tm_gettime() + tm->start;
+        return MIN(tm->block, MAX(t, 0.0));
+    }
 }
 
 /*-------------------------------------------------------------------------*\
@@ -87,9 +112,9 @@ int tm_get(p_tm tm)
 * Input
 *   tm: timeout control structure
 \*-------------------------------------------------------------------------*/
-void tm_markstart(p_tm tm)
-{
+p_tm tm_markstart(p_tm tm) {
     tm->start = tm_gettime();
+    return tm;
 }
 
 /*-------------------------------------------------------------------------*\
@@ -97,26 +122,26 @@ void tm_markstart(p_tm tm)
 * Returns
 *   time in ms.
 \*-------------------------------------------------------------------------*/
-#ifdef WIN32
-int tm_gettime(void) 
-{
-    return GetTickCount();
+#ifdef _WIN32
+double tm_gettime(void) {
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    return ft.dwLowDateTime/1.0e7 + ft.dwHighDateTime*(4294967296.0/1.0e7);
 }
 #else
-int tm_gettime(void) 
-{
-    struct tms t;
-    return (times(&t)*1000)/CLK_TCK;
+double tm_gettime(void) {
+    struct timeval v;
+    gettimeofday(&v, (struct timezone *) NULL);
+    return v.tv_sec + v.tv_usec/1.0e6;
 }
 #endif
 
 /*-------------------------------------------------------------------------*\
 * Initializes module
 \*-------------------------------------------------------------------------*/
-void tm_open(lua_State *L)
-{
-    luaL_openlib(L, LUASOCKET_LIBNAME, func, 0);
-    lua_pop(L, 1);
+int tm_open(lua_State *L) {
+    luaL_openlib(L, NULL, func, 0);
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*\
@@ -125,22 +150,22 @@ void tm_open(lua_State *L)
 *   time: time out value in seconds
 *   mode: "b" for block timeout, "t" for total timeout. (default: b)
 \*-------------------------------------------------------------------------*/
-int tm_meth_settimeout(lua_State *L, p_tm tm)
-{
-    int ms = lua_isnil(L, 2) ? -1 : (int) (luaL_checknumber(L, 2)*1000.0);
+int tm_meth_settimeout(lua_State *L, p_tm tm) {
+    double t = luaL_optnumber(L, 2, -1);
     const char *mode = luaL_optstring(L, 3, "b");
     switch (*mode) {
         case 'b':
-            tm_setblock(tm, ms);
+            tm->block = t; 
             break;
         case 'r': case 't':
-            tm_settotal(tm, ms);
+            tm->total = t;
             break;
         default:
             luaL_argcheck(L, 0, 3, "invalid timeout mode");
             break;
     }
-    return 0;
+    lua_pushnumber(L, 1);
+    return 1;
 }
 
 /*=========================================================================*\
@@ -149,9 +174,9 @@ int tm_meth_settimeout(lua_State *L, p_tm tm)
 /*-------------------------------------------------------------------------*\
 * Returns the time the system has been up, in secconds.
 \*-------------------------------------------------------------------------*/
-static int tm_lua_time(lua_State *L)
+static int tm_lua_gettime(lua_State *L)
 {
-    lua_pushnumber(L, tm_gettime()/1000.0);
+    lua_pushnumber(L, tm_gettime());
     return 1;
 }
 
@@ -161,10 +186,15 @@ static int tm_lua_time(lua_State *L)
 int tm_lua_sleep(lua_State *L)
 {
     double n = luaL_checknumber(L, 1);
-#ifdef WIN32
-    Sleep((int)n*1000);
+#ifdef _WIN32
+    Sleep((int)(n*1000));
 #else
-    sleep((int)n);
+    struct timespec t, r;
+    t.tv_sec = (int) n;
+    n -= t.tv_sec;
+    t.tv_nsec = (int) (n * 1000000000);
+    if (t.tv_nsec >= 1000000000) t.tv_nsec = 999999999;
+    nanosleep(&t, &r);
 #endif
     return 0;
 }

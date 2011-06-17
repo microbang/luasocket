@@ -2,7 +2,7 @@
 * Internet domain functions
 * LuaSocket toolkit
 *
-* RCS ID: $Id: inet.c,v 1.11 2003/08/16 00:06:04 diego Exp $
+* RCS ID: $Id: inet.c,v 1.24 2004/07/16 06:48:48 diego Exp $
 \*=========================================================================*/
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +10,6 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "luasocket.h"
 #include "inet.h"
 
 /*=========================================================================*\
@@ -19,11 +18,13 @@
 static int inet_global_toip(lua_State *L);
 static int inet_global_tohostname(lua_State *L);
 static void inet_pushresolved(lua_State *L, struct hostent *hp);
+static int inet_global_gethostname(lua_State *L);
 
 /* DNS functions */
 static luaL_reg func[] = {
     { "toip", inet_global_toip },
     { "tohostname", inet_global_tohostname },
+    { "gethostname", inet_global_gethostname},
     { NULL, NULL}
 };
 
@@ -33,22 +34,13 @@ static luaL_reg func[] = {
 /*-------------------------------------------------------------------------*\
 * Initializes module
 \*-------------------------------------------------------------------------*/
-void inet_open(lua_State *L)
+int inet_open(lua_State *L)
 {
-    lua_pushstring(L, LUASOCKET_LIBNAME);
-    lua_gettable(L, LUA_GLOBALSINDEX);
-    if (lua_isnil(L, -1)) {
-        lua_pop(L, 1);
-        lua_newtable(L);
-        lua_pushstring(L, LUASOCKET_LIBNAME);
-        lua_pushvalue(L, -2);
-        lua_settable(L, LUA_GLOBALSINDEX);
-    }
     lua_pushstring(L, "dns");
     lua_newtable(L);
     luaL_openlib(L, NULL, func, 0);
     lua_settable(L, -3);
-    lua_pop(L, 1);
+    return 0;
 }
 
 /*=========================================================================*\
@@ -58,22 +50,28 @@ void inet_open(lua_State *L)
 * Returns all information provided by the resolver given a host name
 * or ip address
 \*-------------------------------------------------------------------------*/
-static int inet_global_toip(lua_State *L)
-{
-    const char *address = luaL_checkstring(L, 1);
+static int inet_gethost(const char *address, struct hostent **hp) {
     struct in_addr addr;
-    struct hostent *hp;
     if (inet_aton(address, &addr))
-        hp = gethostbyaddr((char *) &addr, sizeof(addr), AF_INET);
+        return sock_gethostbyaddr((char *) &addr, sizeof(addr), hp);
     else 
-        hp = gethostbyname(address);
-    if (!hp) {
+        return sock_gethostbyname(address, hp);
+}
+
+/*-------------------------------------------------------------------------*\
+* Returns all information provided by the resolver given a host name
+* or ip address
+\*-------------------------------------------------------------------------*/
+static int inet_global_tohostname(lua_State *L) {
+    const char *address = luaL_checkstring(L, 1);
+    struct hostent *hp = NULL; 
+    int err = inet_gethost(address, &hp);
+    if (err != IO_DONE) {
         lua_pushnil(L);
-        lua_pushstring(L, sock_hoststrerror());
+        lua_pushstring(L, sock_hoststrerror(err));
         return 2;
     }
-    addr = *((struct in_addr *) hp->h_addr);
-    lua_pushstring(L, inet_ntoa(addr));
+    lua_pushstring(L, hp->h_name);
     inet_pushresolved(L, hp);
     return 2;
 }
@@ -82,24 +80,40 @@ static int inet_global_toip(lua_State *L)
 * Returns all information provided by the resolver given a host name
 * or ip address
 \*-------------------------------------------------------------------------*/
-static int inet_global_tohostname(lua_State *L)
+static int inet_global_toip(lua_State *L)
 {
     const char *address = luaL_checkstring(L, 1);
-    struct in_addr addr;
-    struct hostent *hp;
-    if (inet_aton(address, &addr))
-        hp = gethostbyaddr((char *) &addr, sizeof(addr), AF_INET);
-    else 
-        hp = gethostbyname(address);
-    if (!hp) {
+    struct hostent *hp = NULL; 
+    int err = inet_gethost(address, &hp);
+    if (err != IO_DONE) {
         lua_pushnil(L);
-        lua_pushstring(L, sock_hoststrerror());
+        lua_pushstring(L, sock_hoststrerror(err));
         return 2;
     }
-    lua_pushstring(L, hp->h_name);
+    lua_pushstring(L, inet_ntoa(*((struct in_addr *) hp->h_addr)));
     inet_pushresolved(L, hp);
     return 2;
 }
+
+
+/*-------------------------------------------------------------------------*\
+* Gets the host name
+\*-------------------------------------------------------------------------*/
+static int inet_global_gethostname(lua_State *L)
+{
+    char name[257];
+    name[256] = '\0';
+    if (gethostname(name, 256) < 0) {
+        lua_pushnil(L);
+        lua_pushstring(L, "gethostname failed");
+        return 2;
+    } else {
+        lua_pushstring(L, name);
+        return 1;
+    }
+}
+
+
 
 /*=========================================================================*\
 * Lua methods
@@ -178,77 +192,61 @@ static void inet_pushresolved(lua_State *L, struct hostent *hp)
 }
 
 /*-------------------------------------------------------------------------*\
+* Tries to create a new inet socket
+\*-------------------------------------------------------------------------*/
+const char *inet_trycreate(p_sock ps, int type) {
+    return sock_strerror(sock_create(ps, AF_INET, type, 0));
+}
+
+/*-------------------------------------------------------------------------*\
 * Tries to connect to remote address (address, port)
 \*-------------------------------------------------------------------------*/
 const char *inet_tryconnect(p_sock ps, const char *address, 
-        unsigned short port)
+        unsigned short port, p_tm tm)
 {
     struct sockaddr_in remote;
-    const char *err;
+    int err;
     memset(&remote, 0, sizeof(remote));
     remote.sin_family = AF_INET;
     remote.sin_port = htons(port);
-    if (strcmp(address, "*")) {
-        if (!strlen(address) || !inet_aton(address, &remote.sin_addr)) {
-            struct hostent *hp = gethostbyname(address);
+	if (strcmp(address, "*")) {
+        if (!inet_aton(address, &remote.sin_addr)) {
+            struct hostent *hp = NULL;
             struct in_addr **addr;
-            if (!hp) return sock_hoststrerror();
+            err = sock_gethostbyname(address, &hp);
+            if (err != IO_DONE) return sock_hoststrerror(err);
             addr = (struct in_addr **) hp->h_addr_list;
             memcpy(&remote.sin_addr, *addr, sizeof(struct in_addr));
         }
     } else remote.sin_family = AF_UNSPEC;
-    sock_setblocking(ps);
-    err = sock_connect(ps, (SA *) &remote, sizeof(remote));
-    if (err) {
-        sock_destroy(ps);
-        *ps = SOCK_INVALID;
-        return err;
-    } else {
-        sock_setnonblocking(ps);
-        return NULL;
-    }
+    err = sock_connect(ps, (SA *) &remote, sizeof(remote), tm);
+    if (err != IO_DONE) sock_destroy(ps);
+    return sock_strerror(err);
 }
 
 /*-------------------------------------------------------------------------*\
 * Tries to bind socket to (address, port)
 \*-------------------------------------------------------------------------*/
-const char *inet_trybind(p_sock ps, const char *address, unsigned short port, 
-        int backlog)
+const char *inet_trybind(p_sock ps, const char *address, unsigned short port)
 {
     struct sockaddr_in local;
-    const char *err;
+    int err;
     memset(&local, 0, sizeof(local));
     /* address is either wildcard or a valid ip address */
     local.sin_addr.s_addr = htonl(INADDR_ANY);
     local.sin_port = htons(port);
     local.sin_family = AF_INET;
-    if (strcmp(address, "*") && 
-            (!strlen(address) || !inet_aton(address, &local.sin_addr))) {
-        struct hostent *hp = gethostbyname(address);
+    if (strcmp(address, "*") && !inet_aton(address, &local.sin_addr)) {
+        struct hostent *hp = NULL;
         struct in_addr **addr;
-        if (!hp) return sock_hoststrerror();
+        err = sock_gethostbyname(address, &hp);
+        if (err != IO_DONE) return sock_hoststrerror(err);
         addr = (struct in_addr **) hp->h_addr_list;
         memcpy(&local.sin_addr, *addr, sizeof(struct in_addr));
     }
-    sock_setblocking(ps);
     err = sock_bind(ps, (SA *) &local, sizeof(local));
-    if (err) {
-        sock_destroy(ps);
-        *ps = SOCK_INVALID;
-        return err;
-    } else {
-        sock_setnonblocking(ps);
-        if (backlog > 0) sock_listen(ps, backlog);
-        return NULL;
-    }
-}
-
-/*-------------------------------------------------------------------------*\
-* Tries to create a new inet socket
-\*-------------------------------------------------------------------------*/
-const char *inet_trycreate(p_sock ps, int type)
-{
-    return sock_create(ps, AF_INET, type, 0);
+    if (err != IO_DONE) sock_destroy(ps);
+    return sock_strerror(err); 
 }
 
 /*-------------------------------------------------------------------------*\

@@ -1,29 +1,31 @@
-Major C code rewrite. Code is modular and extensible. Hopefully, next
-versions will include code for local domain sockets, file descriptors,
-pipes (on unix) and named pipes (on windows) as a bonus.
+What's New
 
-All functions provided by the library are in the namespace "socket".
-Functions such as send/receive/timeout/close etc do not exist anymore as
-stand alone functions. They are now only available as methods of the
-appropriate objects.
+Changes in the 2.0-beta2 were mostly bug-fixes.
 
-TCP has been changed to become more uniform.  First create an object, then 
-connect or bind if needed. Then use IO functions. The "socket.connect" and
-"socket.bind" functions are provided for simplicity, but they just call
-"socket.tcp" followed by the ":connect" or ":bind" methods.
+<> Fixed silly last-minute-change bug in HTTP/SMTP running;
+<> usocket.c/wsocket.c look nicer thanks to Mike;
+<> Finally total timeout is reliable on Windows! (found a pretty
+   simple work around);
+<> UDP has a reasonable maximum datagram size (8k);
+<> Receive accepts the prefix optional argument (good for
+    non-blocking);
+<> <b>Send doesn't support multiple arguments anymore</b>;
+<> Instead, send allows the selection of the substring
+   to be sent (good for non-blocking);
+<> Fixed bug that caused select return tables not to be associative
+   on windows;
+<> Should compiles with g++;
+<> New sample unix domain support;
+<> New sample LPD support;
+<> Comprehensive error messages;
+<> New getstats and setstats methods to help
+   throttling;
+<> Listen defaults to 32 backlog;
+<> SMTP/FTP/HTTP fail gracefully;
+<> accept/connect/select interrupt safe
+<> Fixed bug that didn't set accepted sockets as non-blocking
+<> <b>New timming functions sleep and gettime have 
+   higher resolution and no wrap around problems</b>;
+<> Bug fixes in the manual;
+<> Fixed bug of missing cast in getfd.
 
-All functions return a non-nil value as first return value if successful.
-All functions return whatever could be retrieved followed by error message 
-in case of error. The best way to check for errors is to check for the
-presence of an error message.  WARNING: The send function was affected.
-
-Better error messages and parameter checking.
-
-UDP connected udp sockets can break association with peer by calling
-setpeername with address "*". 
-
-socket.sleep and socket.time are now part of the library and are 
-supported.
-
-Socket options interface has been improved and TCP now also supports socket
-options.

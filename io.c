@@ -2,7 +2,7 @@
 * Input/Output abstraction
 * LuaSocket toolkit
 *
-* RCS ID: $Id: io.c,v 1.2 2003/06/26 18:47:45 diego Exp $
+* RCS ID: $Id: io.c,v 1.5 2004/07/15 06:11:53 diego Exp $
 \*=========================================================================*/
 #include "io.h"
 
@@ -12,37 +12,22 @@
 /*-------------------------------------------------------------------------*\
 * Initializes C structure
 \*-------------------------------------------------------------------------*/
-void io_init(p_io io, p_send send, p_recv recv, void *ctx)
-{
+void io_init(p_io io, p_send send, p_recv recv, p_error error, void *ctx) {
     io->send = send;
     io->recv = recv;
+    io->error = error;
     io->ctx = ctx;
 }
 
 /*-------------------------------------------------------------------------*\
-* Translate error codes to Lua
+* I/O error strings
 \*-------------------------------------------------------------------------*/
-void io_pusherror(lua_State *L, int code)
-{
-    switch (code) {
-        case IO_DONE:
-            lua_pushnil(L);
-            break;
-        case IO_TIMEOUT:
-            lua_pushstring(L, "timeout");
-            break;
-        case IO_LIMITED:
-            lua_pushstring(L, "limited");
-            break;
-        case IO_CLOSED:
-            lua_pushstring(L, "closed");
-            break;
-        case IO_REFUSED:
-            lua_pushstring(L, "refused");
-            break;
-        default:
-            lua_pushstring(L, "unknown error");
-            break;
+const char *io_strerror(int err) {
+    switch (err) {
+        case IO_DONE: return NULL;
+        case IO_CLOSED: return "closed";
+        case IO_TIMEOUT: return "timeout";
+        case IO_CLIPPED: return "clipped";
+        default: return "unknown error"; 
     }
 }
-

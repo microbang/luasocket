@@ -12,14 +12,15 @@
 * with a call to the setpeername function. The same function can be used to
 * break the connection.
 *
-* RCS ID: $Id: udp.h,v 1.5 2003/06/26 18:47:48 diego Exp $
+* RCS ID: $Id: udp.h,v 1.8 2004/07/26 05:17:31 diego Exp $
 \*=========================================================================*/
 #include <lua.h>
 
 #include "timeout.h"
 #include "socket.h"
 
-#define UDP_DATAGRAMSIZE 576
+/* can't be larger than wsocket.c MAXCHUNK!!! */
+#define UDP_DATAGRAMSIZE 8192
 
 typedef struct t_udp_ {
     t_sock sock;
@@ -27,6 +28,6 @@ typedef struct t_udp_ {
 } t_udp;
 typedef t_udp *p_udp;
 
-void udp_open(lua_State *L);
+int udp_open(lua_State *L);
 
 #endif /* UDP_H */
