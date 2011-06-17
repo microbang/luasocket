@@ -4,7 +4,8 @@
 
 <head>
 <meta name="description" content="LuaSocket: Introduction to the core">
-<meta name="keywords" content="Lua, Library, TCP, UDP, Network, Support"> 
+<meta name="keywords" content="Lua, LuaSocket, TCP, UDP, Network,
+Library, Support"> 
 <title>LuaSocket: Introduction to the core</title>
 <link rel="stylesheet" href="reference.css" type="text/css">
 </head>
@@ -26,6 +27,7 @@
 <p class=bar>
 <a href="home.html">home</a> &middot;
 <a href="home.html#download">download</a> &middot;
+<a href="installation.html">installation</a> &middot;
 <a href="introduction.html">introduction</a> &middot;
 <a href="reference.html">reference</a> 
 </p>
@@ -56,7 +58,7 @@ interface to I/O across different domains and operating systems.
 </p>
 
 <p>
-The LuaSocket API was designed with two goals in mind. First, users
+The API design had two goals in mind. First, users
 experienced with the C API to sockets should feel comfortable using LuaSocket.
 Second, the simplicity and the feel of the Lua language should be
 preserved. To achieve these goals, the LuaSocket API keeps the function names and semantics the C API whenever possible, but their usage in Lua has been greatly simplified.  
@@ -92,7 +94,7 @@ call might perform several OS calls, so that the two timeout values are
 Finally,  the host  name  resolution   is  transparent,  meaning  that  most
 functions and methods accept both  IP addresses and host names. In  case a
 host name is given, the  library  queries the  system's  resolver  and
-tries  the main returned IP address. Note that direct use of IP addresses
+tries  the main IP address returned. Note that direct use of IP addresses
 is more efficient, of course. The 
 <a href=dns.html#toip><tt>toip</tt></a> 
 and <a href=dns.html#tohostname><tt>tohostname</tt></a> 
@@ -103,29 +105,6 @@ functions from the DNS module are provided to convert between host names and IP 
 Together, these changes make network programming in LuaSocket much simpler
 than it is in C, as the following sections will show.
 </p>
-
-<!-- initializing +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-<h3>Initializing the library</h3>
-
-<p>
-The core LuaSocket is almost entirely implemented in C. It is 
-usually available as a dynamic library which the interpreter can load 
-with the help of a loader module written in Lua. 
-Beginning with version 2.0 and following the Lua 5.0 trend, all LuaSocket
-functionality is defined inside tables (or rather namespaces). No global
-variables are ever created.
-Namespaces are obtained with the <tt>require</tt> Lua function, which loads
-and initializes any required library and returns the namespace. 
-For example, the core functionality or LuaSocket is usually available
-from the "<tt>socket</tt>" namespace. 
-</p>
-
-<pre class="example">
-socket = require("socket")
-print(socket.VERSION)
---&gt; LuaSocket 2.0
-</pre>
 
 <!-- tcp ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -318,6 +297,17 @@ io.write(socket.try((udp:receive())))
 </pre>
 </blockquote>
 
+<!-- More +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<h3 id=more>Support modules</h3>
+
+<p> Although not covered in the introduction, LuaSocket offers 
+much more than TCP and UDP functionality. As the library
+evolved, support for <a href=http.html>HTTP</a>, <a href=ftp.html>FTP</a>,
+and <a href=smtp.html>SMTP</a> were built on top of these. These modules
+and many others are covered by the <a href=reference.html>reference manual</a>. 
+</p>
+
 <!-- footer +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
 <div class=footer>
@@ -326,13 +316,14 @@ io.write(socket.try((udp:receive())))
 <p class=bar>
 <a href="home.html">home</a> &middot;
 <a href="home.html#down">download</a> &middot;
+<a href="installation.html">installation</a> &middot;
 <a href="introduction.html">introduction</a> &middot;
 <a href="reference.html">reference</a>
 </p>
 <p>
 <small>
 Last modified by Diego Nehab on <br>
-Thu Jun 17 02:47:21 EDT 2004
+Sun Nov 28 03:19:00 EST 2004
 </small>
 </p>
 </center>

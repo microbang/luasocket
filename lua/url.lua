@@ -2,8 +2,16 @@
 -- URI parsing, composition and relative URL resolution
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: url.lua,v 1.23 2004/06/17 06:23:13 diego Exp $
+-- RCS ID: $Id: url.lua,v 1.28 2005/01/02 22:44:00 diego Exp $
 -----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+-- Declare module
+-----------------------------------------------------------------------------
+local string = require("string")
+local base = require("base")
+local table = require("table")
+module("socket.url")
 
 -----------------------------------------------------------------------------
 -- Encodes a string into its escaped hexadecimal representation
@@ -13,7 +21,7 @@
 --   escaped representation of string binary
 -----------------------------------------------------------------------------
 function escape(s)
-    return string.gsub(s, "(.)", function(c)
+    return string.gsub(s, "([^A-Za-z0-9_])", function(c)
         return string.format("%%%02x", string.byte(c))
     end)
 end
@@ -28,7 +36,7 @@ end
 -----------------------------------------------------------------------------
 local function make_set(t)
 	local s = {}
-	for i = 1, table.getn(t) do
+	for i,v in base.ipairs(t) do
 		s[t[i]] = 1
 	end
 	return s
@@ -57,7 +65,7 @@ end
 -----------------------------------------------------------------------------
 function unescape(s)
     return string.gsub(s, "%%(%x%x)", function(hex)
-        return string.char(tonumber(hex, 16))
+        return string.char(base.tonumber(hex, 16))
     end)
 end
 
@@ -186,7 +194,7 @@ end
 --   corresponding absolute url
 -----------------------------------------------------------------------------
 function absolute(base_url, relative_url)
-    local base = type(base_url) == "table" and base_url or parse(base_url)
+    local base = base.type(base_url) == "table" and base_url or parse(base_url)
     local relative = parse(relative_url)
     if not base then return relative_url
     elseif not relative then return base_url
@@ -264,3 +272,5 @@ function build_path(parsed, unsafe)
 	if parsed.is_absolute then path = "/" .. path end
 	return path
 end
+
+--getmetatable(_M).__index = nil

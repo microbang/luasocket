@@ -1,13 +1,17 @@
 -----------------------------------------------------------------------------
 -- LuaSocket helper module
 -- Author: Diego Nehab
--- RCS ID: $Id: socket.lua,v 1.9 2004/07/26 04:03:55 diego Exp $
+-- RCS ID: $Id: socket.lua,v 1.15 2005/01/02 22:51:33 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
--- Load LuaSocket from dynamic library
+-- Declare module and import dependencies
 -----------------------------------------------------------------------------
-local socket = requirelib("luasocket", "luaopen_socket", getfenv(1))
+local base = require("base")
+local string = require("string")
+local math = require("math")
+local socket = require("lsocket")
+module("socket")
 
 -----------------------------------------------------------------------------
 -- Auxiliar functions
@@ -39,11 +43,11 @@ socket.try = socket.newtry()
 
 function socket.choose(table)
     return function(name, opt1, opt2)
-        if type(name) ~= "string" then
+        if base.type(name) ~= "string" then
             name, opt1, opt2 = "default", name, opt1
         end
         local f = table[name or "nil"]
-        if not f then error("unknown key (" .. tostring(name) .. ")", 3)
+        if not f then base.error("unknown key (".. base.tostring(name) ..")", 3)
         else return f(opt1, opt2) end
     end
 end
@@ -58,20 +62,20 @@ socket.sinkt = {}
 socket.BLOCKSIZE = 2048
 
 socket.sinkt["http-chunked"] = function(sock)
-    return setmetatable({
+    return base.setmetatable({
         getfd = function() return sock:getfd() end,
         dirty = function() return sock:dirty() end
     }, { 
         __call = function(self, chunk, err)
             if not chunk then return sock:send("0\r\n\r\n") end
             local size = string.format("%X\r\n", string.len(chunk))
-            return sock:send(size, chunk, "\r\n")
+            return sock:send(size ..  chunk .. "\r\n")
         end
     })
 end
 
 socket.sinkt["close-when-done"] = function(sock)
-    return setmetatable({
+    return base.setmetatable({
         getfd = function() return sock:getfd() end,
         dirty = function() return sock:dirty() end
     }, { 
@@ -85,7 +89,7 @@ socket.sinkt["close-when-done"] = function(sock)
 end
 
 socket.sinkt["keep-open"] = function(sock)
-    return setmetatable({
+    return base.setmetatable({
         getfd = function() return sock:getfd() end,
         dirty = function() return sock:dirty() end
     }, { 
@@ -101,7 +105,7 @@ socket.sinkt["default"] = socket.sinkt["keep-open"]
 socket.sink = socket.choose(socket.sinkt)
 
 socket.sourcet["by-length"] = function(sock, length)
-    return setmetatable({
+    return base.setmetatable({
         getfd = function() return sock:getfd() end,
         dirty = function() return sock:dirty() end
     }, { 
@@ -118,7 +122,7 @@ end
 
 socket.sourcet["until-closed"] = function(sock)
     local done
-    return setmetatable({
+    return base.setmetatable({
         getfd = function() return sock:getfd() end,
         dirty = function() return sock:dirty() end
     }, { 
@@ -136,7 +140,7 @@ socket.sourcet["until-closed"] = function(sock)
 end
 
 socket.sourcet["http-chunked"] = function(sock)
-    return setmetatable({
+    return base.setmetatable({
         getfd = function() return sock:getfd() end,
         dirty = function() return sock:dirty() end
     }, { 
@@ -144,7 +148,7 @@ socket.sourcet["http-chunked"] = function(sock)
             -- get chunk size, skip extention
             local line, err = sock:receive()
             if err then return nil, err end 
-            local size = tonumber(string.gsub(line, ";.*", ""), 16)
+            local size = base.tonumber(string.gsub(line, ";.*", ""), 16)
             if not size then return nil, "invalid chunk size" end
             -- was it the last chunk?
             if size <= 0 then 
@@ -167,3 +171,5 @@ end
 socket.sourcet["default"] = socket.sourcet["until-closed"]
 
 socket.source = socket.choose(socket.sourcet)
+
+--getmetatable(_M).__index = nil

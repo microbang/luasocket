@@ -2,14 +2,13 @@
 * Timeout management functions
 * LuaSocket toolkit
 *
-* RCS ID: $Id: timeout.c,v 1.25 2004/07/16 06:48:48 diego Exp $
+* RCS ID: $Id: timeout.c,v 1.28 2005/01/02 22:51:33 diego Exp $
 \*=========================================================================*/
 #include <stdio.h>
 
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "luasocket.h"
 #include "auxiliar.h"
 #include "timeout.h"
 
@@ -118,20 +117,25 @@ p_tm tm_markstart(p_tm tm) {
 }
 
 /*-------------------------------------------------------------------------*\
-* Gets time in ms, relative to system startup.
+* Gets time in s, relative to January 1, 1970 (UTC) 
 * Returns
-*   time in ms.
+*   time in s.
 \*-------------------------------------------------------------------------*/
 #ifdef _WIN32
 double tm_gettime(void) {
     FILETIME ft;
+    double t;
     GetSystemTimeAsFileTime(&ft);
-    return ft.dwLowDateTime/1.0e7 + ft.dwHighDateTime*(4294967296.0/1.0e7);
+    /* Windows file time (time since January 1, 1601 (UTC)) */
+    t  = ft.dwLowDateTime/1.0e7 + ft.dwHighDateTime*(4294967296.0/1.0e7);
+    /* convert to Unix Epoch time (time since January 1, 1970 (UTC)) */
+    return (t - 11644473600.0);
 }
 #else
 double tm_gettime(void) {
     struct timeval v;
     gettimeofday(&v, (struct timezone *) NULL);
+    /* Unix Epoch time (time since January 1, 1970 (UTC)) */
     return v.tv_sec + v.tv_usec/1.0e6;
 }
 #endif
@@ -194,7 +198,10 @@ int tm_lua_sleep(lua_State *L)
     n -= t.tv_sec;
     t.tv_nsec = (int) (n * 1000000000);
     if (t.tv_nsec >= 1000000000) t.tv_nsec = 999999999;
-    nanosleep(&t, &r);
+    while (nanosleep(&t, &r) != 0) {
+        t.tv_sec = r.tv_sec;
+        t.tv_nsec = r.tv_nsec;
+    }
 #endif
     return 0;
 }

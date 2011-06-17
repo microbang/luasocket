@@ -2,14 +2,16 @@
 -- MIME support for the Lua language.
 -- Author: Diego Nehab
 -- Conforming to RFCs 2045-2049
--- RCS ID: $Id: mime.lua,v 1.15 2004/06/21 06:07:57 diego Exp $
+-- RCS ID: $Id: mime.lua,v 1.21 2005/01/02 22:44:00 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
--- Load other required modules
+-- Declare module and import dependencies
 -----------------------------------------------------------------------------
-local mime = requirelib("mime", "luaopen_mime", getfenv(1))
+local base = require("base")
 local ltn12 = require("ltn12")
+local mime = require("lmime")
+module("mime")
 
 -- encode, decode and wrap algorithm tables
 mime.encodet = {}
@@ -19,11 +21,11 @@ mime.wrapt = {}
 -- creates a function that chooses a filter by name from a given table 
 local function choose(table)
     return function(name, opt1, opt2)
-        if type(name) ~= "string" then 
+        if base.type(name) ~= "string" then 
             name, opt1, opt2 = "default", name, opt1
         end
         local f = table[name or "nil"]
-        if not f then error("unknown key (" .. tostring(name) .. ")", 3)
+        if not f then error("unknown key (" .. base.tostring(name) .. ")", 3)
         else return f(opt1, opt2) end
     end
 end
@@ -46,6 +48,15 @@ end
 mime.decodet['quoted-printable'] = function()
     return ltn12.filter.cycle(unqp, "")
 end
+
+local io, string = io, string
+
+local function format(chunk)
+    if chunk then
+        if chunk == "" then return "''"
+        else return string.len(chunk) end
+    else return "nil" end
+end 
 
 -- define the line-wrap filters
 mime.wrapt['text'] = function(length)
@@ -73,3 +84,5 @@ end
 function mime.stuff()
     return ltn12.filter.cycle(dot, 2)
 end
+
+--getmetatable(_M).__index = nil

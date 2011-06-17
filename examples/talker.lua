@@ -2,7 +2,7 @@
 -- TCP sample: Little program to send text lines to a given host/port
 -- LuaSocket sample files
 -- Author: Diego Nehab
--- RCS ID: $Id: talker.lua,v 1.8 2004/06/21 06:07:57 diego Exp $
+-- RCS ID: $Id: talker.lua,v 1.9 2005/01/02 22:44:00 diego Exp $
 -----------------------------------------------------------------------------
 local socket = require("socket")
 host = host or "localhost"
@@ -12,10 +12,10 @@ if arg then
 	port = arg[2] or port
 end
 print("Attempting connection to host '" ..host.. "' and port " ..port.. "...")
-c = socket.try(socket.connect(host, port))
+c = assert(socket.connect(host, port))
 print("Connected! Please type stuff (empty line to stop):")
 l = io.read()
 while l and l ~= "" and not e do
-	socket.try(c:send(l, "\n"))
+	assert(c:send(l .. "\n"))
 	l = io.read()
 end

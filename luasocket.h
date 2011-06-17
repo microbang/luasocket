@@ -6,14 +6,16 @@
 * Diego Nehab
 * 9/11/1999
 *
-* RCS ID: $Id: luasocket.h,v 1.17 2004/07/26 04:03:55 diego Exp $
+* RCS ID: $Id: luasocket.h,v 1.19 2005/01/02 22:44:00 diego Exp $
 \*=========================================================================*/
 #include <lua.h>
 
 /*-------------------------------------------------------------------------*\
 * Current luasocket version
 \*-------------------------------------------------------------------------*/
-#define LUASOCKET_VERSION "LuaSocket 2.0 (beta2)"
+#define LUASOCKET_VERSION    "LuaSocket 2.0 (beta3)"
+#define LUASOCKET_COPYRIGHT  "Copyright (C) 2004-2005 Diego Nehab"
+#define LUASOCKET_AUTHORS    "Diego Nehab"
 
 /*-------------------------------------------------------------------------*\
 * This macro prefixes all exported API functions

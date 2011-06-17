@@ -2,13 +2,14 @@
 * MIME support functions
 * LuaSocket toolkit
 *
-* RCS ID: $Id: mime.c,v 1.19 2004/06/17 06:23:12 diego Exp $
+* RCS ID: $Id: mime.c,v 1.23 2005/01/02 22:51:33 diego Exp $
 \*=========================================================================*/
 #include <string.h>
 
 #include <lua.h>
 #include <lauxlib.h>
 
+#include "compat-5.1.h"
 #include "mime.h"
 
 /*=========================================================================*\
@@ -77,13 +78,9 @@ static UC b64unbase[256];
 /*-------------------------------------------------------------------------*\
 * Initializes module
 \*-------------------------------------------------------------------------*/
-MIME_API int luaopen_mime(lua_State *L)
+MIME_API int luaopen_lmime(lua_State *L)
 {
-    /* whoever is loading the library replaced the global environment
-     * with the namespace table */
-    lua_pushvalue(L, LUA_GLOBALSINDEX);
-    /* export functions */
-    luaL_openlib(L, NULL, func, 0);
+    luaL_module(L, "mime", func, 0);
     /* initialize lookup tables */
     qpsetup(qpclass, qpunbase);
     b64setup(b64unbase);
@@ -270,6 +267,7 @@ static int mime_global_b64(lua_State *L)
     if (!input) {
         asize = b64pad(atom, asize, &buffer);
         luaL_pushresult(&buffer);
+        if (!(*lua_tostring(L, -1))) lua_pushnil(L);
         lua_pushnil(L);
         return 2;
     }
@@ -309,6 +307,7 @@ static int mime_global_unb64(lua_State *L)
     /* if second is nil, we are done */
     if (!input) {
         luaL_pushresult(&buffer);
+        if (!(*lua_tostring(L, -1))) lua_pushnil(L);
         lua_pushnil(L);
         return 2;
     }
@@ -421,7 +420,7 @@ static size_t qppad(UC *input, size_t size, luaL_Buffer *buffer)
         if (qpclass[input[i]] == QP_PLAIN) luaL_putchar(buffer, input[i]);
         else qpquote(input[i], buffer);
     }
-    luaL_addstring(buffer, EQCRLF);
+    if (size > 0) luaL_addstring(buffer, EQCRLF);
     return 0;
 }
 
@@ -457,7 +456,9 @@ static int mime_global_qp(lua_State *L)
     if (!input) {
         asize = qppad(atom, asize, &buffer);
         luaL_pushresult(&buffer);
+        if (!(*lua_tostring(L, -1))) lua_pushnil(L);
         lua_pushnil(L);
+        return 2;
     }
     /* otherwise process rest of input */
     last = input + isize;
@@ -534,6 +535,7 @@ static int mime_global_unqp(lua_State *L)
     /* if second part is nil, we are done */
     if (!input) {
         luaL_pushresult(&buffer);
+        if (!(*lua_tostring(L, -1))) lua_pushnil(L);
         lua_pushnil(L);
         return 2;
     } 

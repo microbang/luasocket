@@ -3,21 +3,11 @@ makefiles for Linux, Mac OS X and Visual C.NET. The Linux makefile can be
 used for AIX, SunOS, and IRIX too, with little modification.  These build
 two shared libraries: one for luasocket and one for mime.
 
-To support dynamic loading of LuaSocket by the stand alone
-Lua Interpreter with the use of new "require" and "requirelib" functions,
-install the etc/lua.lua file somewhere.
+LuaSocket 2.0 uses the new package proposal for Lua 5.1. All Lua library
+developers are encouraged to update their libraries so that all libraries
+can coexist peacefully and users can benefit from the standardization and
+flexibility of the standard.
 
-For my Mac OS X box, for instance, I place all files in
-/Users/diego/tec/luasocket and set the following environment variables:
-
-    LUA_INIT=@/Users/diego/tec/luasocket/lua.lua
-    LUA_PATH=/Users/diego/tec/luasocket/?.lua;?.lua
-    LUA_PATHLIB=/Users/diego/tec/luasocket/?.dylib;?.dylib
-
-With that, I can run any luasocket application with the command line:
-
-    lua <script>
-
-as long as the script uses "require" to load the needed namespaces.
-Much nicer than having to build a new executable just to initialize
-LuaSocket!
+Please check the installation instructions in the manual for details.
+Have fun! 
+Diego.

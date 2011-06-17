@@ -2,7 +2,7 @@
 * UDP object 
 * LuaSocket toolkit
 *
-* RCS ID: $Id: udp.c,v 1.25 2004/07/15 06:11:53 diego Exp $
+* RCS ID: $Id: udp.c,v 1.26 2004/11/27 07:57:59 diego Exp $
 \*=========================================================================*/
 #include <string.h> 
 
@@ -288,7 +288,8 @@ static int meth_setpeername(lua_State *L) {
 static int meth_close(lua_State *L) {
     p_udp udp = (p_udp) aux_checkgroup(L, "udp{any}", 1);
     sock_destroy(&udp->sock);
-    return 0;
+    lua_pushnumber(L, 1);
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*\

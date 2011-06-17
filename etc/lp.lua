@@ -3,15 +3,18 @@
 -- LuaSocket toolkit.
 -- Author: David Burgess
 -- Modified by Diego Nehab, but David is in charge
--- RCS ID: $Id: lp.lua,v 1.5 2004/07/02 23:47:52 diego Exp $
+-- RCS ID: $Id: lp.lua,v 1.10 2005/01/02 22:44:00 diego Exp $
 -----------------------------------------------------------------------------
 --[[
      if you have any questions: RFC 1179
 ]]
 -- make sure LuaSocket is loaded
+local io = require("io")
+local base = require("base")
+local string = require("string")
 local socket = require("socket")
 local ltn12 = require("ltn12")
-local test = socket.try
+module("socket.lp")
 
 -- default port
 PORT = 515
@@ -28,7 +31,7 @@ local function connect(localhost, option)
         local localport = 721
         local done, err
         repeat
-            skt = test(socket.tcp())
+            skt = socket.try(socket.tcp())
             try(skt:settimeout(30))
             done, err = skt:bind(localhost, localport)
             if not done then
@@ -37,9 +40,8 @@ local function connect(localhost, option)
                 skt = nil
             else break end
         until localport > 731
-        test(skt, err)
-    else skt = test(socket.tcp()) end
-print("'" .. host .. "'")
+        socket.try(skt, err)
+    else skt = socket.try(socket.tcp()) end
     try(skt:connect(host, port))
     return { skt = skt, try = try }
 end
@@ -242,9 +244,9 @@ local format_codes = {
 -- lp.send
 
 send = socket.protect(function(file, option)
-  test(file, "invalid file name")
-  test(option and type(option) == "table", "invalid options")
-  local fh = test(io.open(file,"rb"))
+  socket.try(file, "invalid file name")
+  socket.try(option and base.type(option) == "table", "invalid options")
+  local fh = socket.try(io.open(file,"rb"))
   local datafile_size = fh:seek("end") -- get total size
   fh:seek("set")                        -- go back to start of file
   local localhost = socket.dns.gethostname() or os.getenv("COMPUTERNAME") 
@@ -271,11 +273,11 @@ send = socket.protect(function(file, option)
     lpfile,
     ctlfn); -- mandatory part of ctl file
   if (option.banner) then cfile = cfile .. 'L'..user..'\10' end
-  if (option.indent) then cfile = cfile .. 'I'..tonumber(option.indent)..'\10' end
+  if (option.indent) then cfile = cfile .. 'I'..base.tonumber(option.indent)..'\10' end
   if (option.mail) then cfile = cfile .. 'M'..string.sub((option.mail),1,128)..'\10' end
   if (fmt == 'p' and option.title) then cfile = cfile .. 'T'..string.sub((option.title),1,79)..'\10' end
   if ((fmt == 'p' or fmt == 'l' or fmt == 'f') and option.width) then
-    cfile = cfile .. 'W'..tonumber(option,width)..'\10'
+    cfile = cfile .. 'W'..base.tonumber(option,width)..'\10'
   end
 
   con.skt:settimeout(option.timeout or 65)
@@ -315,3 +317,5 @@ query = socket.protect(function(p)
   con.skt:close()
   return data
 end)
+
+--getmetatable(_M).__index = nil

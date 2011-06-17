@@ -2,12 +2,12 @@
 -- Little program to download files from URLs
 -- LuaSocket sample files
 -- Author: Diego Nehab
--- RCS ID: $Id: get.lua,v 1.20 2004/06/20 22:19:54 diego Exp $
+-- RCS ID: $Id: get.lua,v 1.21 2004/10/11 06:18:57 diego Exp $
 -----------------------------------------------------------------------------
 local socket = require("socket")
-local http = require("http")
-local ftp = require("ftp")
-local url = require("url")
+local http = require("socket.http")
+local ftp = require("socket.ftp")
+local url = require("socket.url")
 local ltn12 = require("ltn12")
 
 -- formats a number of seconds into human readable form

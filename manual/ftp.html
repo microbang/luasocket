@@ -4,7 +4,7 @@
 
 <head>
 <meta name="description" content="LuaSocket: FTP support">
-<meta name="keywords" content="Lua, Library, FTP, Network, Support">
+<meta name="keywords" content="Lua, LuaSocket, FTP, Network, Library, Support">
 <title>LuaSocket: FTP support</title>
 <link rel="stylesheet" href="reference.css" type="text/css">
 </head>
@@ -26,6 +26,7 @@
 <p class=bar>
 <a href="home.html">home</a> &middot;
 <a href="home.html#download">download</a> &middot;
+<a href="installation.html">installation</a> &middot;
 <a href="introduction.html">introduction</a> &middot;
 <a href="reference.html">reference</a> 
 </p>
@@ -163,7 +164,7 @@ local ltn12 = require("ltn12")
 local url = require("url")
 
 -- a function that returns a directory listing
-function ls(u)
+function nlst(u)
     local t = {}
     local p = url.parse(u)
     p.command = "nlst"
@@ -265,13 +266,14 @@ f, e = ftp.put{
 <p class=bar>
 <a href="home.html">home</a> &middot;
 <a href="home.html#download">download</a> &middot;
+<a href="installation.html">installation</a> &middot;
 <a href="introduction.html">introduction</a> &middot;
 <a href="reference.html">reference</a> 
 </p>
 <p>
 <small>
 Last modified by Diego Nehab on <br>
-Thu Jun 17 02:47:04 EDT 2004
+Sun Nov 28 03:19:00 EST 2004
 </small>
 </p>
 </center>

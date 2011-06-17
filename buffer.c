@@ -2,7 +2,7 @@
 * Input/Output interface for Lua programs
 * LuaSocket toolkit
 *
-* RCS ID: $Id: buffer.c,v 1.20 2004/07/26 05:17:31 diego Exp $
+* RCS ID: $Id: buffer.c,v 1.21 2004/11/27 07:57:59 diego Exp $
 \*=========================================================================*/
 #include <lua.h>
 #include <lauxlib.h>
@@ -158,6 +158,7 @@ int buf_isempty(p_buf buf) {
 /*-------------------------------------------------------------------------*\
 * Sends a block of data (unbuffered)
 \*-------------------------------------------------------------------------*/
+#define STEPSIZE 8192
 static int sendraw(p_buf buf, const char *data, size_t count, size_t *sent) {
     p_io io = buf->io;
     p_tm tm = buf->tm;
@@ -165,7 +166,8 @@ static int sendraw(p_buf buf, const char *data, size_t count, size_t *sent) {
     int err = IO_DONE;
     while (total < count && err == IO_DONE) {
         size_t done;
-        err = io->send(io->ctx, data+total, count-total, &done, tm);
+        size_t step = (count-total <= STEPSIZE)? count-total: STEPSIZE;
+        err = io->send(io->ctx, data+total, step, &done, tm);
         total += done;
     }
     *sent = total;

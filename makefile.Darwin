@@ -1,10 +1,11 @@
 LV=2.0
 MV=1.0
+COMPAT=compat-5.1r2
 
 LUAC=luac
 BIN2C=bin2c
 CC=gcc
-OPT=-O2 
+OPT=$(INC) -O2 -dynamic
 
 LOBJS= \
 	luasocket.o \
@@ -18,23 +19,25 @@ LOBJS= \
 	udp.o \
 	except.o \
 	select.o \
+	$(COMPAT)/compat-5.1.o \
 	usocket.o 
 
 MOBJS= \
-	mime.o
+	mime.o \
+	$(COMPAT)/compat-5.1.o
 
 # Mac OS X
 LIBS=-llualib -llua -lcc_dynamic -lc -lm
 OPTIONS=-DLUASOCKET_DEBUG
-CFLAGS=$(PROF) $(OPT) $(DBG) -I/sw/include -pedantic -Wall $(OPTIONS)
+CFLAGS=$(PROF) $(OPT) $(DBG) -I$(COMPAT) -I. -pedantic -Wall $(OPTIONS)
 
 LLTFLAGS=-dynamic -compatibility_version $(LV) -current_version $(LV) 
-LDYN=luasocket.$(LV).dylib
+LDYN=lsocket.dylib
 
 MLTFLAGS=-dynamic -compatibility_version $(MV) -current_version $(MV) 
-MDYN=mime.$(MV).dylib
+MDYN=lmime.dylib
 
-all: $(LDYN) $(MDYN)
+all: $(LDYN) $(MDYN) $(ZDYN)
 
 $(LDYN): $(LOBJS)
 	libtool $(LLTFLAGS) -o $@ $(LOBJS) $(LIBS) 
@@ -44,37 +47,27 @@ $(MDYN): $(MOBJS)
 	libtool $(MLTFLAGS) -o $@ $(MOBJS) $(LIBS) 
 #	nmedit -s mime.export $(MDYN) -o $(MDYN)
 
-# dependencies
 auxiliar.o: auxiliar.c auxiliar.h
 buffer.o: buffer.c buffer.h io.h timeout.h
 except.o: except.c except.h
-inet.o: inet.c inet.h socket.h io.h usocket.h timeout.h
-io.o: io.c io.h
+inet.o: inet.c inet.h socket.h io.h timeout.h usocket.h
+io.o: io.c io.h timeout.h
 luasocket.o: luasocket.c luasocket.h auxiliar.h except.h timeout.h \
   buffer.h io.h inet.h socket.h usocket.h tcp.h udp.h select.h
 mime.o: mime.c mime.h
-options.o: options.c auxiliar.h options.h socket.h io.h usocket.h \
-  timeout.h inet.h
-select.o: select.c socket.h io.h usocket.h timeout.h select.h
-tcp.o: tcp.c auxiliar.h socket.h io.h usocket.h timeout.h inet.h \
+options.o: options.c auxiliar.h options.h socket.h io.h timeout.h \
+  usocket.h inet.h
+select.o: select.c socket.h io.h timeout.h usocket.h select.h
+ssl.o: ssl.c ssl.h buffer.h io.h timeout.h socket.h usocket.h tcp.h
+tcp.o: tcp.c auxiliar.h socket.h io.h timeout.h usocket.h inet.h \
   options.h tcp.h buffer.h
 timeout.o: timeout.c luasocket.h auxiliar.h timeout.h
-udp.o: udp.c auxiliar.h socket.h io.h usocket.h timeout.h inet.h \
+udp.o: udp.c auxiliar.h socket.h io.h timeout.h usocket.h inet.h \
   options.h udp.h
-usocket.o: usocket.c socket.h io.h usocket.h timeout.h
-wsocket.o: wsocket.c socket.h io.h usocket.h timeout.h
-
-.SUFFIXES: .lua .lch .lc
-
-.lua.lc:
-	$(LUAC) -o $@ $<
-
-.lc.lch:
-	$(BIN2C) $< > $@
+unix.o: unix.c auxiliar.h socket.h io.h timeout.h usocket.h options.h \
+  unix.h buffer.h
+usocket.o: usocket.c socket.h io.h  timeout.h usocket.h
 
 clean:
-	rm -f lua.o
 	rm -f $(MOBJS) $(LOBJS)
 	rm -f $(MDYN) $(LDYN)
-	rm -f *.lc
-	rm -f *.lch

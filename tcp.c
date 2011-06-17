@@ -2,7 +2,7 @@
 * TCP object 
 * LuaSocket toolkit
 *
-* RCS ID: $Id: tcp.c,v 1.30 2004/07/26 04:03:55 diego Exp $
+* RCS ID: $Id: tcp.c,v 1.31 2004/11/27 07:57:59 diego Exp $
 \*=========================================================================*/
 #include <string.h> 
 
@@ -233,7 +233,8 @@ static int meth_close(lua_State *L)
 {
     p_tcp tcp = (p_tcp) aux_checkgroup(L, "tcp{any}", 1);
     sock_destroy(&tcp->sock);
-    return 0;
+    lua_pushnumber(L, 1);
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*\
