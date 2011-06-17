@@ -8,7 +8,7 @@
 #define _LUASOCKET_H_
 
 /* Current luasocket version */
-#define LUASOCKET_VERSION "LuaSocket 1.2.1"
+#define LUASOCKET_VERSION "LuaSocket 1.3b"
 
 /*-------------------------------------------------------------------------*\
 * These can be changed to according to the applications' needs.
@@ -21,9 +21,16 @@
 /* note that 576 bytes is the maximum safe value */
 
 /*-------------------------------------------------------------------------*\
+* This macro prefixes all exported API functions
+\*-------------------------------------------------------------------------*/
+#ifndef LUASOCKET_API
+#define LUASOCKET_API extern
+#endif
+
+/*-------------------------------------------------------------------------*\
 * Initializes the library interface with Lua and the socket library.
 * Defines the symbols exported to Lua.
 \*-------------------------------------------------------------------------*/
-void lua_socketlibopen(lua_State *L);
+LUASOCKET_API void lua_socketlibopen(lua_State *L);
 
 #endif /* _LUASOCKET_H_ */

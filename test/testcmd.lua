@@ -46,7 +46,7 @@ end
 -- Tests if library is in _DEBUG mode
 -----------------------------------------------------------------------------
 function test_debug_mode()
-	if not sleep or not time then
+	if not _sleep or not _time then
 		print("_DEBUG not defined at library compilation!")
 		exit(1)
 	end

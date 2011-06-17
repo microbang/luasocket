@@ -12,9 +12,12 @@ ul { list-style-type: disc };
 
 <center>
 <table border=0 cellspacing=0 cellpadding=0>
-<tr><td align=center><img alt="The Lua language" src="lua.png">
+<tr><td align=center>
+<a href="http://www.lua.org">
+<img border=0 alt="The Lua language" src="lua.png">
+</a>
 <tr><td align=center><big><b>LuaSocket</b></big>
-<tr><td align=center valign=top>IPv4 Socket support for the Lua language
+<tr><td align=center valign=top>IPv4 Sockets support for the Lua language
 </table>
 </center>
 
@@ -23,6 +26,7 @@ ul { list-style-type: disc };
 <center>
 <a href=#whatis>what is</a> &middot;
 <a href=#intro>introduction</a> &middot;
+<a href=#old>old versions</a> &middot;
 <a href=#current>current version</a> &middot;
 <a href=#refman>functions</a> &middot;
 <a href=#proto>protocols</a> 
@@ -36,98 +40,157 @@ ul { list-style-type: disc };
 
 <ul>
 <li> <a href=#whatis>What is LuaSocket</a> 
+        <ul>
+        <li> <a href=#old>Old Versions</a>
+        <li> <a href=#current>Current Version</a>
+        <li><a href=#new>What's New</a>
+        <li><a href=#incompat>Incompatibilities with previous versions</a>
+        <li><a href=#down>Download</a>
+        </ul>
 <li> <a href=#intro>Introduction</a>
-		<ul>
-		<li><a href=#init>Initializing the library</a>
-		<li><a href=#prog>Network programming with LuaSocket</a>
-			<ul>
-			<li> <a href=#TCPprog>TCP programming</a>
-			<li> <a href=#UDPprog>UDP programming</a>
-			</ul>
-		</ul>
-<li> <a href=#current>Current Version</a>
-		<ul>
-		<li><a href=#new>What's New</a>
-		<li><a href=#incompat>Incompatibilities with Previous Versions</a>
-		<li><a href=#down>Download</a>
-		</ul>
+        <ul>
+        <li><a href=#init>Initializing the library</a>
+        <li><a href=#prog>Network programming with LuaSocket</a>
+            <ul>
+            <li> <a href=#TCPprog>TCP programming</a>
+            <li> <a href=#UDPprog>UDP programming</a>
+            </ul>
+        </ul>
 <li> <a href=#refman>Function Reference</a>
-	<ul>
-	<li> <a href=#tcpman>TCP sockets</a>
-		<ul>
-		<li> <a href=#tcpaccept>accept</a>
-		<li> <a href=#tcpbind>bind</a>
-		<li> <a href=#tcpclose>close</a>
-		<li> <a href=#tcpconnect>connect</a>
-		<li> <a href=#tcpgetpeername>getpeername</a>
-		<li> <a href=#tcpgetsockname>getsockname</a>
-		<li> <a href=#tcpreceive>receive</a>
-		<li> <a href=#tcpselect>select</a>
-		<li> <a href=#tcpsend>send</a>
-		<li> <a href=#tcptimeout>timeout</a>
-		</ul>
-	<li> <a href=#udpman>UDP sockets</a>
-		<ul>
-		<li> <a href=#udpclose>close</a>
-		<li> <a href=#udpgetpeername>getpeername</a>
-		<li> <a href=#udpgetsockname>getsockname</a>
-		<li> <a href=#udpreceive>receive</a>
-		<li> <a href=#udpreceivefrom>receivefrom</a>
-		<li> <a href=#udpselect>select</a>
-		<li> <a href=#udpsend>send</a>
-		<li> <a href=#udpsendto>sendto</a>
-		<li> <a href=#udpsetpeername>setpeername</a>
-		<li> <a href=#udpsetsockname>setsockname</a>
-		<li> <a href=#udptimeout>timeout</a>
-		<li> <a href=#udpsocket>udpsocket</a>
-		</ul>
-	<li> <a href=#dnsman>DNS services</a>
-		<ul>
-		<li> <a href=#toip>toip</a>
-		<li> <a href=#toip>tohostname</a>
-		</ul>
-	</ul>
+    <ul>
+    <li> <a href=#tcpman>TCP sockets</a>
+        <ul>
+        <li> <a href=#tcpaccept>accept</a>
+        <li> <a href=#tcpbind>bind</a>
+        <li> <a href=#tcpclose>close</a>
+        <li> <a href=#tcpconnect>connect</a>
+        <li> <a href=#tcpgetpeername>getpeername</a>
+        <li> <a href=#tcpgetsockname>getsockname</a>
+        <li> <a href=#tcpreceive>receive</a>
+        <li> <a href=#tcpselect>select</a>
+        <li> <a href=#tcpsend>send</a>
+        <li> <a href=#tcptimeout>timeout</a>
+        </ul>
+    <li> <a href=#udpman>UDP sockets</a>
+        <ul>
+        <li> <a href=#udpclose>close</a>
+        <li> <a href=#udpgetpeername>getpeername</a>
+        <li> <a href=#udpgetsockname>getsockname</a>
+        <li> <a href=#udpreceive>receive</a>
+        <li> <a href=#udpreceivefrom>receivefrom</a>
+        <li> <a href=#udpselect>select</a>
+        <li> <a href=#udpsend>send</a>
+        <li> <a href=#udpsendto>sendto</a>
+        <li> <a href=#udpsetpeername>setpeername</a>
+        <li> <a href=#udpsetsockname>setsockname</a>
+        <li> <a href=#udptimeout>timeout</a>
+        <li> <a href=#udpsocket>udpsocket</a>
+        </ul>
+    <li> <a href=#dnsman>DNS services</a>
+        <ul>
+        <li> <a href=#toip>toip</a>
+        <li> <a href=#toip>tohostname</a>
+        </ul>
+    </ul>
 <li> <a href=#proto>Protocol Reference</a>
-	<ul>
-	<li> <a href=#smtp>SMTP</a>
-		<ul>
-		<li> <a href=#smtp_mail>smtp_mail</a>
-		<li> <a href=#mail>mail</a>
-		</ul>
-	<li> <a href=#http>HTTP</a>
-		<ul>
-		<li> <a href=#http_request>http_request</a>
-		<li> <a href=#http_get>http_get</a>
-		<li> <a href=#http_post>http_post</a>
-		</ul>
-	<li> <a href=#ftp>FTP</a>
-		<ul>
-		<li> <a href=#ftp_get>ftp_get</a>
-		<li> <a href=#ftp_put>ftp_put</a>
-		</ul>
-	</ul>
+    <ul>
+    <li> <a href=#smtp>SMTP</a>
+        <ul>
+        <li> <a href=#smtp_mail>smtp_mail</a>
+        <li> <a href=#mail>mail</a>
+        </ul>
+    <li> <a href=#stream>Streaming with callbacks</a>
+        <ul>
+        <li> <a href=#receive_cb>receive_cb</a>
+        <li> <a href=#send_cb>send_cb</a>
+        </ul>
+    <li> <a href=#http>HTTP</a>
+        <ul>
+        <li> <a href=#http_request>http_request</a>
+        <li> <a href=#http_get>http_get</a>
+        <li> <a href=#http_post>http_post</a>
+        <li> <a href=#http_requestindirect>http_requestindirect</a>
+        <li> <a href=#http_getindirect>http_getindirect</a>
+        <li> <a href=#http_postindirect>http_postindirect</a>
+        </ul>
+    <li> <a href=#ftp>FTP</a>
+        <ul>
+        <li> <a href=#ftp_get>ftp_get</a>
+        <li> <a href=#ftp_put>ftp_put</a>
+        <li> <a href=#ftp_getindirect>ftp_getindirect</a>
+        <li> <a href=#ftp_putindirect>ftp_putindirect</a>
+        </ul>
+    </ul>
 </ul>
 <br>
 
 <h2> <a name=whatis> What is LuaSocket? </h2><p>
 
-LuaSocket   is  a   <a  href="http://www.tecgraf.puc-rio.br/lua">Lua</a>
-extension library  that provides  support for TCP  and UDP  socket layer
-within  the Lua  language. The  library also  provides support  for SMTP
-(sending  e-mails),  HTTP  (www)  and  FTP  (uploading  and  downloading
-files).<p>
+LuaSocket   is  a   <a  href="http://www.lua.org">Lua</a>
+extension library  that provides support  for the TCP and  UDP transport
+layers within  the Lua language.  The library also provides  support for
+SMTP  (sending  e-mails),  HTTP  (www access)  and  FTP  (uploading  and
+downloading files).<p>
 
-It  can be  used  by  any Lua  application  desiring  access to  network
+LuaSocket can be used by any  Lua application desiring access to network
 communication on the Internet, once it has been properly linked with and
 initialized by the interpreter running the Lua application. The code has
-been tested and runs well both on Windows and on Unix platforms.<p>
+been tested and runs well on several Windows and Unix platforms.<p>
 
-The library is available under the same  terms as the Lua language, that
-is, it can be used at no cost for both academic and commercial purposes.
+The library is available under the same  
+<a href="http://www.lua.org/copyright.html">
+terms and conditions</a> as the Lua language, that  is, it  can be  used 
+at  no cost  for both  academic and commercial purposes. <p>
+
+Copyright &copy; 1999-2001 TeCGraf, PUC-Rio. All rights reserved. <br>
+Author: <A href="http://www.tecgraf.puc-rio.br/~diego">Diego Nehab</a><p>
+
+<h3> <a name=old>Old Versions</h3><p>
+
+All  previous versions  of the  LuaSocket library  can be  downloaded 
+<a href="http://www.tecgraf.puc-rio.br/luasocket/old">here</a>. Although
+these  versions are  no longer  supported, they  are still available for
+those that have compatibility issues. <p>
+
+
+<h3> <a name=current>Current Version</h3><p>
+
+LuaSocket version  1.3b is now  available for download! It  is compatible
+with   Lua&nbsp;4.0   and   has    been   tested   on   Windows&nbsp;98,
+Windows&nbsp;2000, Linux, AIX, SunOS and IRIX. <p>
+
+<h3><a name=new>What's New</h3><p>
+
+The major  improvements over previous versions  are in the HTTP  and FTP
+support. Users have the ability to download and upload information chunk
+by  chunk, so  that  the amount  of  memory spent  in  transfers can  be
+bounded. There have also been some bug-fixes:
+
+<ul>
+<li> HTTP and FTP code now support streaming with a callback system.
+<li> Users can now prevent HTTP request code from automatically following 
+     a 301 or 302 redirect server reply;
+<li> UDP sockets can have non-default socket options defined at creation
+     time (<tt>SO_BROADCAST</tt>, <tt>SO_LINGER</tt> etc);
+<li> Bug-fix: select was crashing on invalid input (ex. closed sockets);
+<li> Bug-fix: SMTP code was not dealing correctly with folded server replies, 
+     as defined in Appendix E of RFC 821.
+</ul>
+
+<h3><a name=incompat>Incompatibilities with previous versions</h3><p>
+
+There should be no incompatibilities.
+
+<h3><a name=down> Download </h3><p>
+
+The library can be downloaded in source code from the following links: <p>
+
+<a href="luasocket-1.3b.tar.gz">luasocket-1.3b.tar.gz</a> <br>
+<a href="luasocket-1.3b.zip">luasocket-1.3b.zip</a> <p>
+
+Besides the full C and Lua source code for the library, the distribution
+contains several examples,  this user's manual and  the test procedures.
 <p>
-
-Copyright (C) 2000 TeCGraf, PUC-Rio. All rights reserved. <br>
-Author: Diego Nehab <p>
 
 <h2> <a name=intro> Introduction </h2><p>
 
@@ -151,18 +214,20 @@ The network support  in the Lua language could closely  mirror the C API
 or  could implement  a  new, independent,  transport layer  abstraction.
 Having an API  similar to the C  API would make things  easier for those
 who are used to socket programming. On the other hand, the simplicity of
-the Lua language  would be lost. We ended up  with something in between.
-<p>
+the Lua language  would be lost. We ended up  with something in between,
+in the sense that function names and semantics have been copied from the
+C API  whenever possible, whereas  their usage  in Lua has  been greatly
+simplified. <p>
 
-One of the major differences int the API is the timeout control provided
-by the  library. All I/O  operations are  blocking by default.  In other
-words, the <tt>send</tt>, <tt>receive</tt> and <tt>accept</tt> functions
-will block the  caller application until the operation  is completed (if
-ever). The application can, however, specify upper limits on the time it
-can be  blocked by  LuaSocket ("<tt>return</tt>"  timeout), on  the time
-LuaSocket can  be blocked  by the OS  ("<tt>blocked</tt>" timeout)  or a
-combination  of the  two.  Remember that  each  LuaSocket call  performs
-several  OS  calls,  so  that the  two  timeout  values  are  <i>not</i>
+One of the  major differences in the created API  is the timeout control
+provided by the library. All I/O  operations are blocking by default. In
+other  words, the  <tt>send</tt>,  <tt>receive</tt> and  <tt>accept</tt>
+functions  will block  the  caller application  until  the operation  is
+completed (if ever). The application  can, however, specify upper limits
+on the time it can  be blocked by LuaSocket ("<tt>return</tt>" timeout),
+on  the time  LuaSocket can  be  blocked by  the OS  ("<tt>blocked</tt>"
+timeout) or a combination of the  two. Remember that each LuaSocket call
+performs several OS calls, so that the two timeout values are <i>not</i>
 equivalent. <p>
 
 Another major difference is the receive pattern capability. Applications
@@ -171,19 +236,20 @@ until the connection  is closed etc. All I/O reads  are buffered and the
 performance difference between different receive patterns is negligible.
 <p>
 
-Finally, most functions accept both IP addresses and host names. In case
-a host  name is  given, the  library queries  the system's  resolver and
-tries  all returned  IP addresses  until one  succeeds or  all fail.  IP
-addresses are  directly encoded  and are  therefore more  efficient. The
-<tt>toip</tt> and <tt>tohostname</tt> functions  are provided to convert
-between host names and IP addresses. <p>
+Finally,  host  name  resolution   is  transparent,  meaning  that  most
+functions accept both  IP addresses and host names. In  case a host name
+is  given, the  library  queries the  system's  resolver  and tries  all
+returned IP addresses  until one succeeds or all fail.  IP addresses are
+directly encoded and are therefore more efficient. The <tt>toip</tt> and
+<tt>tohostname</tt> functions are provided to convert between host names
+and IP addresses. <p>
 
 Socket objects are represented as  tables in the Lua language. Different
 socket types accept different operations. These operations are available
 both as stand-alone global functions and  as table methods of the socket
 objects    (i.e.    the    calls   <tt>send(sock,    "test")</tt>    and
 <tt>sock:send("test")</tt>  are  equivalent). It  is  considered  better
-style  to  use  the  table method  versions,  which  are  sligthly  more
+style to  use the table  method versions,  which are also  slightly more
 efficient. <p>
 
 <a name=TCPprog><b>TCP programming</b><p>
@@ -191,10 +257,10 @@ efficient. <p>
 TCP is a reliable stream protocol. In other words, applications send and
 receive data as an error free stream of  bytes. Data is split in one end
 and reassembled transparently on the  other end. There are no boundaries
-in  the data  transfers.  The library  allows users  to  read data  with
-several different  granurality from the sockets:  patterns are available
-for  words, lines,  arbitrary sized  blocks  or "read  up to  connection
-closed", all with similar performance. <p>
+in the  data transfers. The library  allows users to read  data from the
+sockets in  several different granuralities: patterns  are available for
+words, lines, arbitrary sized blocks  or "read up to connection closed",
+all with similar performance. <p>
 
 The library distinguishes  two types of TCP sockets:  client sockets and
 server sockets. <p>
@@ -224,7 +290,7 @@ guaranteed to be error free. Data  transfers are atomic, one datagram at
 a time. Reading only  part of a datagram discards the  rest, so that the
 next read operation will act on the next datagram. The advantages are in
 simplicity (no connection  setup) and performance (no  error checking or
-correction). <p>
+error correction). <p>
 
 An UDP socket object is  created by the <tt>udpcreate</tt> function. UDP
 sockets  do   not  need   to  be  connected   before  use.   The  method
@@ -232,7 +298,7 @@ sockets  do   not  need   to  be  connected   before  use.   The  method
 datagram to  any UDP  (ip, port)  pair. Host names  are not  allowed for
 performance reasons.  Methods <tt>receive</tt>  and <tt>receivefrom</tt>
 can be used to retrieve datagrams, the  latter returning the ip and port
-of  the sender  as  extra return  values (what  makes  it slightly  less
+of  the  sender  as  extra  return  values  (thus  being  slightly  less
 efficient). <p>
 
 When  communication  is performed  repeatedly  with  a single  peer,  an
@@ -249,42 +315,6 @@ transmission.  The   other  methods   available  for  UDP   sockets  are
 <tt>getpeername</tt>,    <tt>getsockname</tt>,   <tt>timeout</tt>    and
 <tt>close</tt>. <p>
 
-<h2> <a name=current>Current Version</h2><p>
-
-LuaSocket version 1.2.1 is now  available for download! It is compatible
-with   Lua&nbsp;4.0   and   has    been   tested   on   Windows&nbsp;98,
-Windows&nbsp;2000, Linux, AIX, SunOS  and IRIX. <p>
-
-<h3><a name=new>What's New</h3><p>
-
-The  major  improvement  in  version   1.2.1  is  the  addition  of  the
-<tt>select</tt> function,  that allows  the user  to wait  for a  set of
-sockets to change status. Here are the most important changes:
-
-<ul>
-<li> Added <tt>select</tt> support. It should be easy to implement 
-     servers with LuaSocket 1.2.1.
-<li> Simplified treatment of global methods. The ~300 lines of code were 
-     replaced by ~15 that do the same job in a faster and cleaner way.
-<li> Added '<tt>*w</tt>' receive pattern to increase compatibility
-     with Lua's <tt>read</tt> function.
-<li> <tt>close</tt> is now allowed on previously closed sockets.
-<li> Removed the <tt>poll</tt> method. It was replaced with advantage 
-     by the <tt>select</tt> method.
-</ul>
-
-<h3><a name=incompat>Incompatibilities with Previous Versions</h3><p>
-
-The  <tt>poll</tt>   function  has  been  replaced   with  advantage  by
-<tt>select</tt> and is no longer supported.
-
-<h3><a name=down> Download </h3><p>
-
-The library can be downloaded in source code from the following links: <p>
-
-<a href="luasocket-1.2.1.tar.gz">luasocket-1.2.1.tar.gz</a> <br>
-<a href="luasocket-1.2.1.zip">luasocket-1.2.1.zip</a> <p>
-
 <h2> <a name=refman> Function Reference </h2> <p>
 
 All the functions  of the API are described below.  Several examples are
@@ -298,10 +328,10 @@ provided separately for TCP and UDP sockets. <p>
 
 <a name=tcpaccept><tt><b>accept(</b>socket<b>)</b></tt><p>
 
-Creates and  returns a TCP  client socket object, representing  a client
-attempting connection on the server <tt>socket</tt>. The function blocks
-until  a remote  connection attempt  is  detected or  until the  timeout
-condition is met. <p>
+Waits  for  a   TCP  client  to  attempt  connection   with  the  server
+<tt>socket</tt>, and  returns a  client socket  object connected  to the
+remote  end.  If  a  timeout condition  is  met,  the  function  returns
+<tt>nil</tt> followed by the string '<tt>timeout</tt>'. <p>
 
 <a name=tcpbind><tt><b>bind(</b>address, port [, backlog]<b>)</b></tt><p>
 
@@ -320,9 +350,10 @@ operations  <tt>accept</tt>,  <tt>close</tt>,  <tt>getsockname</tt>  and
 
 <a name=tcpclose><tt><b>close(</b>socket<b>)</b></tt><p>
 
-Closes the socket <tt>socket</tt>. No  further operations are allowed on
-a  closed  socket. The  local  address  to which  it  is  bound is  made
-available  to other  applications. <p>
+Closes  the   socket  <tt>socket</tt>.   The  local  address   to  which
+<tt>socket</tt> was  bound is made  available to other  applications. No
+further  operations (except  for  further calls  to <tt>close</tt>)  are
+allowed on a closed socket. <p>
 
 Note:  It is  important to  close all  used  sockets once  they are  not
 needed,  since, in  many systems,  each socket  uses a  file descriptor,
@@ -333,8 +364,9 @@ which are a limited system resource. <p>
 Creates   a  new   TCP   client   socket  and   tries   to  connect   to
 (<tt>address</tt>, <tt>port</tt>). <tt>Address</tt> can be an IP address
 or a host name. In case of success, the function returns a client socket
-on   which   the   operations    <tt>send</tt>,   <tt>receive</tt>   and
-<tt>close</tt> are  permitted. In  case of  error, the  function returns
+on   which   the    operations   <tt>close</tt>,   <tt>getsockname</tt>,
+<tt>getpeername</tt>,      <tt>receive</tt>,      <tt>send</tt>      and
+<tt>timeout</tt> are permitted.  In case of error,  the function returns
 <tt>nil</tt> followed by a string describing the error. <p>
 
 <a name=tcpgetpeername><tt><b>getpeername(</b>socket<b>)</b></tt><p>
@@ -370,25 +402,28 @@ is is preceded  by a CR character,  the CR character is  returned in the
 string, whereas the LF character is not;
 
 <li> '<tt>*w</tt>':  reads a word (maximal  sequence of non-white-space
-characters), skipping spaces if necessary;
+characters), skipping leading spaces if necessary;
 
 <li> <tt>number</tt>:  causes the  function to read  <tt>number</tt> raw
 bytes from the socket. 
 
 </ul>
 
-The function returns  one value for each pattern, followed  by a single
+The function  returns one value for  each pattern, followed by  a single
 error  code that  can be  <tt>nil</tt> in  case of  success, the  string
 '<tt>closed</tt>'  in   case  the  connection  was   closed  before  the
-transmission was complete or the string '<tt>timeout</tt>' in case there
-was  a  timeout during  the  operation.  The difference  in  performance
+transmission  was completed  or  the string  '<tt>timeout</tt>' in  case
+there was a timeout during  the operation. The difference in performance
 between all patterns is negligible. <p>
+
+Note: In case of error, the function always return everything it managed
+to download before the error condition was met. <p>
 
 <a name=tcpselect><tt><b>select(</b>receive, send [, timeout]<b>)</b></tt><p>
 
 Waits for  a number of sockets  to change status. <tt>Receive</tt>  is a
 table with  the sockets  to test for  characters available  for reading.
-Sockets in  the <tt>send</tt> table  are watched to see  if it is  ok to
+Sockets in  the <tt>send</tt> table  are watched to see  if it is  OK to
 immediately write  on them.  <tt>Timeout</tt> is  the maximum  amount of
 time  (in seconds)  to  wait for  a change  in  status. A  <tt>nil</tt>,
 negative or omitted <tt>timeout</tt> value  allows the function to block
@@ -411,6 +446,10 @@ Note:   calling   <tt>select</tt>   with   a  server   socket   in   the
 <i>not</i> guarantee  <tt>accept</tt> will  return immediately.  Use the
 <tt>timeout</tt>  server socket  method or  <tt>accept</tt> <i>might</i>
 block forever. <p>
+
+Interesting note: as mentioned in some manuals, calling <tt>select</tt> 
+with both sets empty and a non-null timeout is a fairly portable way to 
+sleep with sub-second precision. <p>
 
 Examples:
 
@@ -442,7 +481,7 @@ Sends the strings <tt>string</tt><sub>1</sub>,
 <tt>string</tt><sub>2</sub>, ... <tt>string</tt><sub>N</sub> through the
 client socket <tt>socket</tt>. The function returns an error code, which
 is <tt>nil</tt> in case of success, the string '<tt>closed</tt>' in case
-the connection  was closed before  the transmission was complete  or the
+the connection was  closed before the transmission was  completed or the
 string  '<tt>timeout</tt>'  in  case  there was  a  timeout  during  the
 operation.  After the  error code,  the function  returns the  number of
 bytes accepted by the transport layer. <p>
@@ -469,18 +508,18 @@ function call.</li> </ul>
 The  <tt>nil</tt>  timeout  <tt>value</tt> allows  operations  to  block
 indefinitely. Negative timeout values have the same effect. <p>
 
-Note: although timeout values have millisecond precision, large blocks can
-cause I/O functions not to respect timeout values due to the time the
-library takes to transfer blocks to and from the kernel and to and from the
-Lua interpreter. <p>
+Note: although  timeout values have millisecond  precision, large blocks
+can cause  I/O functions not to  respect timeout values due  to the time
+the library takes to  transfer blocks to and from the  kernel and to and
+from the Lua interpreter. <p>
 
 <h3> <a name=udpman> UDP sockets </h3> <p>
 
 <a name=udpclose><tt><b>close(</b>socket<b>)</b></tt><p>
 
-Closes the socket <tt>socket</tt>. No  further operations are allowed on
-a  closed  socket. The  local  address  to which  it  is  bound is  made
-available to other applications. <p>
+Closes  the socket  <tt>socket</tt>. The  local address  to which  it is
+bound is made available to other applications. No further operations are
+allowed on a closed socket. <p>
 
 Note:  It is  important to  close all  used  sockets once  they are  not
 needed,  since, in  many systems,  each socket  uses a  file descriptor,
@@ -488,19 +527,19 @@ which are a limited system resource. <p>
 
 <a name=udpgetpeername><tt><b>getpeername(</b>socket<b>)</b></tt><p>
 
-Returns the IP address and port of the peer of the UDP <tt>socket</tt>.
-The function will fail unless a peer has been set with a call to
+Returns the IP address and port of  the peer of the UDP <tt>socket</tt>.
+The  function will  fail unless  a  peer has  been  set with  a call  to
 <tt>setpeername</tt>. <p>
 
 <a name=udpgetsockname><tt><b>getsockname(</b>socket<b>)</b></tt><p>
 
-Returns the local IP address and port of the TCP <tt>socket</tt>
-or <tt>nil</tt> in case of error. <p>
+Returns the  local IP  address and  port of  the TCP  <tt>socket</tt> or
+<tt>nil</tt> in case of error. <p>
 
 Note:   UDP   sockets    are   not   bound   to    any   address   until
-<tt>setsockname</tt> or  the first <tt>sendto</tt> method  is called (in
-which case it  is bound to an ephemeral port  and the wild-card address).
-The local address will not change thereafter. <p>
+<tt>setsockname</tt>  or the  <tt>sendto</tt> method  is called  for the
+first time  (in which  case it  is bound  to an  ephemeral port  and the
+wild-card address). The local address cannot be changed thereafter. <p>
 
 <a name=udpreceive><tt><b>receive(</b>socket [, number]<b>)</b></tt><p>
 
@@ -518,13 +557,13 @@ string '<tt>refused</tt>'.<p>
 
 Works exactly  as the <tt>receive</tt>  function, except it  returns the
 sender  <tt>ip</tt>  and  <tt>port</tt>   as  extra  return  values  and
-therefore is slightly less efficient. <p>
+is therefore slightly less efficient. <p>
 
 <a name=udpselect><tt><b>select(</b>receive, send [, timeout]<b>)</b></tt><p>
 
 Waits for  a number of sockets  to change status. <tt>Receive</tt>  is a
-table with  the sockets  to test for  characters available  for reading.
-Sockets in  the <tt>send</tt> table  are watched to see  if it is  ok to
+table with the sockets to test  for characters available for reading. OK
+Sockets  in the  <tt>send</tt> table  are watched  to  see if  it is  to
 immediately write  on them.  <tt>Timeout</tt> is  the maximum  amount of
 time  (in seconds)  to  wait for  a change  in  status. A  <tt>nil</tt>,
 negative or omitted <tt>timeout</tt> value  allows the function to block
@@ -579,16 +618,15 @@ chooses  an   ephemeral  port.  If  successful,   the  function  returns
 Changes the  timeout value for  the socket <tt>socket</tt>.  By default,
 all  operations are  blocking. The  <tt>timeout</tt> function  defines a
 limit on  the amount of time  the functions can block,  specified as the
-<tt>value</tt>   parameter,  in   seconds.   The  <tt>nil</tt>   timeout
-<tt>value</tt> allows operations to block indefinitely. Negative timeout
-values have the same effect.<p>
+<tt>value</tt> parameter, in seconds. A <tt>nil</tt> or negative timeout
+<tt>value</tt> allows operations to block indefinitely. <p>
 
 Note:  there is  no send  buffer on  an  UDP socket.  Therefore, a  send
 operation on an UDP socket should never block, regardless of the timeout
-<tt>value</tt>. Receive operations, however, can block the application.
+<tt>value</tt>. Receive operations, however,  can block the application.
 <p>
 
-<a name=udpsocket><tt><b>udpsocket()</b></tt><p>
+<a name=udpsocket><tt><b>udpsocket(</b>[options]<b>)</b></tt><p>
 
 Creates  and  returns  an  UDP  socket  object,  on  which  the  methods
 <tt>close</tt>,        <tt>getpeername</tt>,       <tt>getsockname</tt>,
@@ -596,6 +634,34 @@ Creates  and  returns  an  UDP  socket  object,  on  which  the  methods
 <tt>setpeername</tt>, <tt>setsockname</tt>  and <tt>timeout</tt>  can be
 used. In case  of error, the function returns <tt>nil</tt>  and an error
 message. <p>
+
+The table  <tt>options</tt> allows  users to specify  non-default socket
+options at socket creation time. The table must be in the format:
+
+<blockquote>
+<pre>
+options = {
+  ["option-1-name"] = value-1,
+  ["option-2-name"] = value-2,
+  ["option-3-name"] = value-3,
+         ...            ...
+  ["option-n-name"] = value-n
+}
+</pre>
+</blockquote>
+
+The supported options and their expected value types are: <p>
+
+<ul>
+<li> <tt>SO_KEEPALIVE</tt>: a <i>number</i>
+<li> <tt>SO_DONTROUTE</tt>: a <i>number</i>
+<li> <tt>SO_BROADCAST</tt>: a <i>number</i>
+<li> <tt>SO_LINGER</tt>: a <i>table</i> in the format
+    <tt>{l_onoff = </tt><i>number</i>, 
+    <tt>l_linger = </tt><i>number</i><tt>}</tt>.
+</ul>
+
+Note: UDP socket options should only be used by advanced users.
 
 <h3> <a name=dnsman> DNS Services </h3> <p>
 
@@ -621,7 +687,7 @@ Note that the <tt>alias</tt> list can be empty.
 
 Returns a string  with the canonic host name  of given <tt>address</tt>,
 followed  by a  table with  all  information returned  by the  resolver.
-<tt>Address</tt> can be  an IP address or host name.  In case of error,
+<tt>Address</tt> can  be an IP address  or host name. In  case of error,
 the function returns <tt>nil</tt> followed by an error message. <p>
 
 <a name=toip><tt><b>toip(</b>address<b>)</b></tt><p>
@@ -727,6 +793,110 @@ except the <tt>mailserver</tt> parameter is mandatory.<p>
 The function returns <tt>nil</tt> if  the message was sent successfully.
 In case of error, an error message is returned.<p>
 
+<h3> <a name=stream> Streaming with callbacks </h3> <p>
+
+HTTP and FTP  transfers sometimes involve large  amounts of information.
+Sometimes an application  needs to generate outgoing data  in real time,
+or needs to  process incoming information as it is  being received. To
+address these  problems, LuaSocket 1.3b  allows HTTP message  bodies and
+FTP file contents can be received or sent through the callback mechanism
+outlined below. <p>
+
+Instead of  returning the whole contents  of a FTP file  or HTTP message
+body as  string to the Lua  application, the library allows  the user to
+provide a  <i>receive callback</i> that  will be called  with successive
+chunks of data, as the data becomes available: <p>
+
+<blockquote>
+<a name=receive_cb><tt><b>receive_cb(</b>chunk, err<b>)</b></tt><p>
+
+The  callback provided  by the  user will  be repeatedly  called by  the
+library whenever  new data  is available.  Each time  it is  called, the
+callback receives  successive <tt>chunks</tt>  of downloaded  data. When
+the transmission  is over, the function  is called with an  empty string
+(i.e.&nbsp;<tt>""</tt>) as  the <tt>chunk</tt>. If an  error occurs, the
+function  receives a  <tt>nil</tt> chunk  and  an error  message as  the
+<tt>err</tt> argument. The callback  can abort transmission by returning
+<tt>nil</tt> as its first return value. In that case, it can also return
+an error  message. Any non-<tt>nil</tt>  return value proceeds  with the
+transmission. <p>
+
+Examples:
+<blockquote>
+<pre>
+-- saves incoming file to disk, receiving chunk by chunk
+local file = openfile(tmpname(), "wb")       -- open temp file for writing
+local receive_cb = function(chunk, err)
+    if chunk and chunk ~= "" then
+        local res, err = write(%file, chunk) -- try to write to disk
+        if not res then return nil, err      -- woops! abort with error message
+        else return 1 end                    -- all is ok, please go on
+    else closefile(%file) end                -- we are done
+end
+
+-- print throughput feedback while receiving data
+local aux = { start = _time(), got = 0 }     -- auxiliar table
+local receive_cb = function(chunk, err)
+    local dt = _time() - %aux.start          -- elapsed time since start
+    if not chunk or chunk == "" then return end
+    %aux.got = %aux.got + strlen(chunk)      -- total bytes received
+    if dt < 0.1 then return 1 end            -- not enough time for estimate
+    local rate = %aux.got / dt               -- get download rate
+    write("\r" .. format("%.2f", rate))      -- print estimate
+    return 1                                 -- ready for more
+end
+
+</pre>
+</blockquote>
+</blockquote>
+
+Instead  of forcing  the  Lua application  to pass  the  whole FTP  file
+contents or  the HTTP request message  body as a string  to the library,
+the library allows the user to  provide a <i>send callback</i> that will
+be  called repeatedly  to  return successive  parts  of the  information
+needed by the library: <p>
+
+<blockquote>
+<a name=send_cb><tt><b>send_cb()</b></tt><p>
+
+The callback provided by the user will be repeatedly called whenever the
+library needs more data to be sent. Each time the callback is called, it
+should return the next part of the information the library is expecting,
+followed by the total number of bytes to be sent. The callback can abort
+the  process  at any  time  by  returning  <tt>nil</tt> followed  by  an
+optional error message. <p>
+
+Obs: The need for the second return value comes from the fact that, with
+the HTTP protocol for instance, the library needs to know in advance the
+total number of bytes that will be sent. <p>
+
+Examples:<p>
+<blockquote>
+<pre>
+-- sends data from file, in blocks of 4096 bytes
+local file = openfile("words", "rb")         -- open file for reading
+local size = seek(file, "end")               -- get file size 
+seek(file, "set")                            
+local send_cb = function()
+    local chunk = read(%file, 4096)          -- try to read chunk
+    if not chunk then                        -- are we done?
+        closefile(%file) 
+        return "", %size 
+    else return chunk, %size end             -- if not, send what we got
+end
+
+-- sends everything in the first call
+local file = openfile("words", "rb")         -- open file for reading
+local data = read(file, "*a")
+closefile(file)
+local send_cb = function()
+    return %data, strlen(%data)              -- return everything
+end
+
+</pre>
+</blockquote>
+</blockquote>
+
 <h3> <a name=http> HTTP </h3> <p>
 
 The module  <tt>http.lua</tt> provides functionality to  download an URL
@@ -763,20 +933,22 @@ unmodified.<p>
 
 The module exports three functions: <p>
 
-<a name=http_request><tt><b>http_request(</b>method, url [, headers, body]<b>)</b></tt><p>
+<a name=http_request><tt><b>http_request(</b>method, url [, req_hdrs, req_body, stay]<b>)</b></tt><p>
 
 Performs the generic HTTP  request using <tt>method</tt> on <tt>url</tt>
-sending  the request  <tt>headers</tt> and  message <tt>body</tt>  along
-with the  request. If successful, the  function returns the body  of the
-reply, a  table with mime  headers and the  HTTP status returned  by the
-server. In  case of error, the  function returns whatever it  managed to
-retrieve  (<tt>nil</tt> values  representing failure)  and and  an error
-message   describing    the   error.   If    <tt>&lt;user&gt;</tt>   and
-<tt>&lt;password&gt;</tt> are provided in the URL, the function uses the
-Basic Authentication  Scheme (see  <a href=#basic>note</a>)  to retrieve
-the document. <p>
+sending  the   request  headers   <tt>req_hdrs</tt>  and   request  body
+<tt>req_body</tt> in  the request  message. If successful,  the function
+returns the body of the reply, a table with the response headers and the
+HTTP  status returned  by the  server. In  case of  error, the  function
+returns   whatever  it   managed   to   retrieve  (<tt>nil</tt>   values
+representing  failure) and  an error  message describing  the error.  If
+<tt>&lt;user&gt;</tt> and <tt>&lt;password&gt;</tt>  are provided in the
+URL,  the  function  uses  the   Basic  Authentication  Scheme  (see  <a
+href=#basic>note</a>)  to  retrieve  the   document.  The  <tt>stay</tt>
+parameter, when set to anything  but <tt>nil</tt>, prevents the function
+from automatically following a 301 or 302 server redirect message. <p>
 
-<a name=http_get><tt><b>http_get(</b>url [, headers]<b>)</b></tt><p>
+<a name=http_get><tt><b>http_get(</b>url [, req_hdrs, stay]<b>)</b></tt><p>
 
 Calls <tt>http_request</tt> with method '<tt>GET</tt>'.<p>
 
@@ -830,10 +1002,31 @@ f, m, s, e = http_get("http://www.tecgraf.puc-rio.br/~diego/auth/index.html", h)
 </pre>
 </blockquote>
 
-<a name=http_post><tt><b>http_post(</b>url, body [, headers]<b>)</b></tt><p>
+<a name=http_post><tt><b>http_post(</b>url, req_body [, req_hdrs, stay]<b>)</b></tt><p>
 
 Calls   <tt>http_request</tt>   with  method   '<tt>POST</tt>'   sending
 <tt>body</tt> along with the request.<p>
+
+<a name=http_requestindirect><tt><b>http_requestindirect(</b>method, url, resp_body_cb [, req_hdrs, req_body_cb, stay]<b>)</b></tt><p>
+
+Same  as <tt>http_request</tt>,  except that  the HTTP  response message
+body is passed  to the receive callback  <tt>resp_body_cb</tt>, chunk by
+chunk,  instead of  being  returned in  a  string.  Similarly, the  HTTP
+request    message   body    will   be    read   from    send   callback
+<tt>req_body_cb</tt>. In  case the  request has  no body,  the parameter
+<tt>req_body_cb</tt> should be passed as <tt>nil</tt>. <p>
+
+<a name=http_getindirect><tt><b>http_getindirect(</b>url, resp_body_cb
+[, req_hdrs, stay]<b>)</b></tt><p>
+
+Calls <tt>http_requestindirect</tt> with method '<tt>GET</tt>'.<p>
+
+<a name=http_postindirect><tt><b>http_postindirect(</b>url, resp_body_cb, 
+req_body_cb [, req_hdrs, stay]<b>)</b></tt><p>
+
+Calls <tt>http_requestindirect</tt> with  method '<tt>POST</tt>' sending
+message body obtained from  the send callback <tt>req_body_cb</tt> along
+with the request.<p>
 
 <h3> <a name=ftp> FTP </h3> <p>
 
@@ -911,6 +1104,17 @@ e = ftp_put("ftp://ftp.free.org/hello", "hello world!")
 </pre>
 </blockquote>
 
+<a name=ftp_getindirect><tt><b>ftp_getindirect(</b>url, receive_cb [, type]<b>)</b></tt><p>
+
+Same  as <tt>ftp_get</tt>,  but  the file  contents  are  passed to  the
+receive callback  <tt>receive_cb</tt> chunk  by chunk, instead  of being
+returned as a string. <p>
+
+<a name=ftp_putindirect><tt><b>ftp_putindirect(</b>url, send_cb [, type]<b>)</b></tt><p>
+
+Same as  <tt>ftp_put</tt>, but the file  contents will be read  from the
+user provided send callback <tt>send_cb</tt>, chunk by chunk.<p>
+
 <p>
 <center>
 <a href=#whatis>what is</a> &middot;
@@ -930,7 +1134,7 @@ e = ftp_put("ftp://ftp.free.org/hello", "hello world!")
 <tr> <td colspan=3 align=center>
 <small>
 Last modified by Diego Nehab on <br>
-Thu Jan 25 16:11:36 EDT 2001
+Wed Jun  6 19:15:34 EST 2001
 </small>
 </table>
 
