@@ -1,0 +1,14 @@
+Description of the distribution components:
+
+Files:
+
+	luasocket.c				-- LuaSocket implementation
+	luasocket.h				-- library include file
+
+Directories:
+
+	lua						-- supported protocols implementation
+	examples				-- sample code
+	html					-- documentation
+
+Please send any comments to diego@tecgraf.puc-rio.br

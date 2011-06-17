@@ -1,199 +1,491 @@
 <html>
 
 <head>
+<style type="text/css">
+ul { list-style-type: disc };
+</style>
 </head>
 
-<body>
+<body bgcolor="#FFFFFF">
+
+<hr>
 
 <center>
 <h1> LuaSocket: TCP/IP support for the Lua language </h1>
-</center>
-<br>
+</center><br>
 
 <h2> Contents </h2>
 
 <ul>
-<li> <a href=#whatis> What is LuaSocket </a> </li>
-<li> <a href=#intro> Introduction </a> </li>
-<li> <a href=#down> Download </a> </li>
-<li> <a href=#refman> Reference Manual </a> </li>
+<li> <a href=#whatis>What is LuaSocket</a> 
+<li> <a href=#intro>Introduction</a>
+<li> <a href=#down>Download</a>
+		<ul>
+		<li><a href=#new>What's New</a>
+		<li><a href=#incompatible>Incompatibilities with Previous Versions</a>
+		</ul>
+<li> <a href=#refman>Function Reference</a>
+	<ul>
+	<li> <a href=#accept>accept</a>
+	<li> <a href=#bind>bind</a>
+	<li> <a href=#close>close</a>
+	<li> <a href=#connect>connect</a>
+	<li> <a href=#listen>listen</a>
+	<li> <a href=#receive>receive</a>
+	<li> <a href=#timeout>timeout</a>
+	</ul>
+<li> <a href=#proto>Supported Protocol Reference</a>
+	<ul>
+	<li> <a href=#smtp>SMTP</a>
+		<ul>
+		<li> <a href=#smtp_mail>smtp_mail</a>
+		<li> <a href=#mail>mail</a>
+		</ul>
+	<li> <a href=#http>HTTP</a>
+		<ul>
+		<li> <a href=#http_get>http_get</a>
+		</ul>
+	<li> <a href=#ftp>FTP</a>
+		<ul>
+		<li> <a href=#ftp_get>ftp_get</a>
+		<li> <a href=#ftp_put>ftp_put</a>
+		</ul>
+	</ul>
 </ul>
+<br>
 
 <h2> <a name=whatis> What is LuaSocket? </h2>
 
-LuaSocket is a <a href="http://www.tecgraf.puc-rio.br/lua">Lua</a>
-extension library that allows the use the most important
-features of the TCP/IP socket layer within the Lua language. <p>
+LuaSocket   is  a   <a  href="http://www.tecgraf.puc-rio.br/lua">Lua</a>
+extension library that  provides support for TCP/IP  socket layer within
+the Lua  language. The library  also provides support for  SMTP (sending
+e-mails), HTTP (www) and FTP (uploading and downloading files).<p>
 
-It can be used by any Lua application desiring access to TCP/IP
-communication, once it has been properly linked with and
-initialized by the interpreter running the application. The code
-has been tested and runs well on the WinSock2 and 4.3BSD
-platforms. <p>
+It  can  be used  by  any  Lua  application  desiring access  to  TCP/IP
+communication, once it has been  properly linked with and initialized by
+the interpreter  running the application.  The code has been  tested and
+runs well both on Windows and on Unix Platforms.<p>
 
-The library is available under the same terms as the Lua
-language, that is, it can be used at no cost for both academic
-and commercial purposes. <p>
+The library is available under the same  terms as the Lua language, that
+is, it can be used at no cost for both academic and commercial purposes.
+<p>
 
 Copyright (C) 2000 TeCGraf, PUC-Rio. All rights reserved. <br>
 Author: Diego Nehab <p>
 
 <h2> <a name=intro> Introduction </h2>
 
-To have the TCP/IP made functions available to a Lua script, the
-interpreter running the script must be linked to the
-<tt>socklib</tt> library. The functions are registered in the Lua
-scope when the interpreter calls the C function
-<tt>lua_socklibopen</tt>, the only C function exported by the
-library. The scripts can then use all registered functions.
-<p>To connect to a server, a client application creates a client
-socket object with a call to the function <tt>connect</tt>. Once
-this object is created, the user can use the functions
-<tt>send</tt> and <tt>receive</tt> to exchange information with
-the server. After all data exchange is done, the client
-application can close the connection by calling the
-<tt>close</tt> function on the client socket. <p>
+To  have the  TCP/IP  functions  made available  to  a  Lua script,  the
+interpreter running the script must  be linked to the <tt>luasocket</tt>
+library.  The  functions  are  registered in  the  Lua  scope  when  the
+interpreter calls the C  function <tt>lua_socketlibopen</tt>, the only C
+function  exported  by  the  library.  The  scripts  can  then  use  all
+registered functions.  <p>To connect to  a server, a  client application
+creates  a   client  socket   object  with  a   call  to   the  function
+<tt>connect</tt>. Once  this object  is created, the  client application
+can  use the  functions <tt>send</tt>  and <tt>receive</tt>  to exchange
+information with the server. After all data exchange is done, the client
+application  can  close the  connection  by  calling the  <tt>close</tt>
+function on the client socket. <p>
 
-On the server side, a server application binds to an address with
-a call to the <tt>bind</tt> function, which returns a server
-socket object.  The server application can then accept remote
-connections on the server socket, with calls to the
-<tt>accept</tt> function. This function returns a client socket,
-through which the server application can communicate with the
-client application that attempted connection. Both server and
-client sockets can be closed with the <tt>close</tt> function.
+On the server side, a server application binds to an address with a call
+to the <tt>bind</tt> function, which returns a server socket object. The
+server  application can  then accept  remote connections  on the  server
+socket,  with  calls  to  the <tt>accept</tt>  function.  This  function
+returns  a  client socket,  through  which  the server  application  can
+communicate with the client  application that attempted connection. Both
+server  and  client  sockets  can  be  closed  with  the  <tt>close</tt>
+function. <p>
+
+All  functions  are  available  both as  stand-alone  functions  and  as
+<i>methods</i> of  the socket  objects. For  example, the  function call
+<tt>send(socket,"test")</tt>   is  equivalent   to  the   function  call
+<tt>socket:send("test")</tt>, where <tt>socket</tt>  is a client socket.
 <p>
-
-
-All functions are available both as stand-alone functions and as
-<i>methods</i> of the socket objects. For example, the function
-call <tt>send(socket,"test")</tt> is equivalent to the function
-call <tt>socket:send("test")</tt>, where <tt>socket</tt> is a
-client socket. <p>
 
 <h2> <a name=down> Download </h2>
 
-LuaSocket version 1.0 is now available for download! It is
-compatible with Lua&nbsp;4.0 and has been tested on Windows&nbsp;98,
+LuaSocket version  1.1 is now  available for download! It  is compatible
+with   Lua&nbsp;4.0   and   has    been   tested   on   Windows&nbsp;98,
 Windows&nbsp;2000, Linux, AIX, SunOS and Solaris. <p>
 
-<a href="luasocket-1.0.tar.gz"> luasocket-1.0.tar.gz </a> <br>
-<a href="luasocket-1.0.zip"> luasocket-1.0.zip </a> <p>
+<a href="luasocket-1.1.tar.gz"> luasocket-1.1.tar.gz </a> <br>
+<a href="luasocket-1.1.zip"> luasocket-1.1.zip </a> <p>
 
-<h2> <a name=refman> Reference Manual </h2>
+<h3><a name=#new>What's New</h3>
 
-<tt><b>accept(</b>socket<b>)</b></tt><p>
+<ul>
+<li> Added support for the SMTP, HTTP and FTP protocols, implemented in
+     the Lua language and distributed in source code.
+<li> Added new <tt>receive</tt> pattern '<tt>*a</tt>' to read until the
+     connection is closed.
+<li> The function <tt>bind</tt> now returns the IP address and port it bound
+     to as extra values.
+</ul>
 
-Returns a client socket object, representing a client attempting
-connection on the server socket <tt>socket</tt>. The function
-blocks until a connection attempt is detected. <p>
+<h3><a name=#incompatible>Incompatibilities with Previous Versions</h3>
 
-<tt><b>bind(</b>address, port [, backlog]<b>)</b></tt><p>
+The only  incompatibility with previous  version is the return  value of
+the <tt>bind</tt> function. It used to return only the server socket and
+and error message.<p>
 
-Binds to the address <tt>address</tt> and port <tt>port</tt> on
-the local host. <tt>Address</tt> can be an IP address or a host
-name. The optional parameter <tt>backlog</tt> (default value 1)
-specifies the number of client connections that can be queued
-waiting for service. If the queue is full and another client
-attempts connection, the connection is refused. In case of
-success, the function returns a server socket, on which the
-operations <tt>accept</tt>, <tt>close</tt> and <tt>listen</tt>
-are permitted. In case of error, the function returns
-<tt>nil</tt> followed by a string describing the error. <p>
+<h2> <a name=refman> Function Reference </h2>
 
-<tt><b>close(</b>socket<b>)</b></tt><p>
+All the functions  of the API are described below.  Several examples are
+given in  the distribution, including  the automated tests and  the full
+implementation of the protocols FTP, SMTP and HTTP. <p>
 
-Closes the socket <tt>socket</tt>. No further operations are allowed
-on a closed socket. In case <tt>socket</tt> is a server socket, the address
-to which it is bound is made available to other applications. It is important
-to close all used sockets once they are not needed, since, in many systems,
-each socket uses a file descriptor, which is a limited system resource. <p>
+<a name=accept><tt><b>accept(</b>socket<b>)</b></tt><p>
 
-<tt><b>connect(</b>address, port<b>)</b></tt><p>
+Returns  a  client  socket  object,  representing  a  client  attempting
+connection  on the  server socket  <tt>socket</tt>. The  function blocks
+until a connection attempt is detected. <p>
 
-Attempts connection to address <tt>address</tt> and port
-<tt>port</tt>.  <tt>Address</tt> can be an IP address or a host
-name. In case of success, the function returns a client socket on
-which the operations <tt>send</tt>, <tt>receive</tt> and
-<tt>close</tt> are permitted. In case of error, the function
-returns <tt>nil</tt> followed by a string describing the error. <p>
+<a name=bind><tt><b>bind(</b>address, port [, backlog]<b>)</b></tt><p>
 
-<tt><b>listen(</b>socket, backlog<b>)</b></tt><p>
+Binds  to the  address <tt>address</tt>  and port  <tt>port</tt> on  the
+local host.  <tt>Address</tt> can be  an IP address  or a host  name. If
+<tt>address</tt> is '<tt>*</tt>', the system decides the address to bind
+to. If the  chosen port is 0, the  system decides what port  to bind to.
+The optional parameter <tt>backlog</tt>  (default value 1) specifies the
+number of client connections that can  be queued waiting for service. If
+the queue is full and another client attempts connection, the connection
+is refused. In case of success, the function returns a server socket, on
+which the operations <tt>accept</tt>, <tt>close</tt> and <tt>listen</tt>
+are permitted. As  two extra values, the function returns  a string with
+the IP address bound to and a number  with the port bound to. In case of
+error, the function returns <tt>nil</tt> followed by a string describing
+the error. <p>
+
+<a name=close><tt><b>close(</b>socket<b>)</b></tt><p>
+
+Closes the socket <tt>socket</tt>. No  further operations are allowed on
+a closed socket. In case <tt>socket</tt> is a server socket, the address
+to which  it is  bound is  made available to  other applications.  It is
+important to close all used sockets once  they are not needed, since, in
+many systems,  each socket uses a  file descriptor, which are  a limited
+system resource. <p>
+
+<a name=connect><tt><b>connect(</b>address, port<b>)</b></tt><p>
+
+Attempts connection to address  <tt>address</tt> and port <tt>port</tt>.
+<tt>Address</tt>  can be  an  IP address  or  a host  name.  In case  of
+success, the  function returns a  client socket on which  the operations
+<tt>send</tt>,  <tt>receive</tt> and  <tt>close</tt>  are permitted.  In
+case of  error, the function  returns <tt>nil</tt> followed by  a string
+describing the error. <p>
+
+<a name=listen><tt><b>listen(</b>socket, backlog<b>)</b></tt><p>
 
 Changes the <tt>backlog</tt> parameter of the server socket
 <tt>socket</tt>.<p>
 
-<tt><b>send(</b>socket, string<sub>1</sub> </tt>[, <tt>string</tt><sub>2</sub>,
+<a name=send><tt><b>send(</b>socket, string<sub>1</sub> </tt>[, <tt>string</tt><sub>2</sub>,
 ... <tt>string</tt><sub>N</sub>]<b><tt>)</tt></b><p>
 
-Sends the strings <tt>string</tt><sub>1</sub>,
-<tt>string</tt><sub>2</sub>, ... <tt>string</tt><sub>N</sub>
-through the client socket <tt>socket</tt>.  The function returns
-an error code, which is <tt>nil</tt> in case of success, the
-string `<tt>closed</tt>' in case the connection was closed before
-the transmission was complete or the string `<tt>timeout</tt>' in
-case there was a timeout during the operation. After the error
-code, the function returns the number of bytes accepted by the
-transport layer. <p>
+Sends the strings <tt>string</tt><sub>1</sub>, 
+<tt>string</tt><sub>2</sub>, ... <tt>string</tt><sub>N</sub> through the
+client socket <tt>socket</tt>. The function returns an error code, which
+is <tt>nil</tt> in case of success, the string '<tt>closed</tt>' in case
+the connection  was closed before  the transmission was complete  or the
+string  '<tt>timeout</tt>'  in  case  there was  a  timeout  during  the
+operation.  After the  error code,  the function  returns the  number of
+bytes accepted by the transport layer. <p>
 
-<tt><b>receive(</b>socket [, pattern<sub>1</sub></tt><b>, </b><tt>pattern</tt><sub>2</sub>, ... <tt>pattern</tt><sub>N</sub>]<b><tt>)</tt></b><p>
+<a name=receive><tt><b>receive(</b>socket [, pattern<sub>1</sub></tt><b>, </b><tt>pattern</tt><sub>2</sub>, ... <tt>pattern</tt><sub>N</sub>]<b><tt>)</tt></b><p>
 
-Receives <tt>pattern</tt><sub>1</sub>,
-<tt>pattern</tt><sub>2</sub>, ... <tt>pattern</tt><sub>N</sub>
-from the client socket <tt>socket</tt>.  A pattern can be one of
-the following:
+Receives <tt>pattern</tt><sub>1</sub>, <tt>pattern</tt><sub>2</sub>, ...
+<tt>pattern</tt><sub>N</sub> from  the client socket  <tt>socket</tt>. A
+pattern can be one of the following:
 
 <ul>
-<li> `<tt>*l</tt>': causes the function to read a line of text
-from the socket.  The line is terminated by a LF character
-(ASCII~10), optionally preceeded by a CR character (ASCII~13).
-The CR and LF characters are not returned.  This is the default
-pattern.</li>
+<li> '<tt>*l</tt>': causes the function to read  a line of text from the
+socket.  The  line is  terminated  by  a LF  character  (ASCII&nbsp;10),
+optionally preceeded  by a CR  character (ASCII&nbsp;13). The CR  and LF
+characters are not returned. This is the default pattern;</li>
 
-<li> `<tt>*lu</tt>': causes the function to read a line of text
-from the socket.  The line is assumed to be terminated by a
-single LF character. If the LF character is is preceeded by a CR
-character, the CR character is returned in the string, whereas
-the LF character is not.</li>
+<li> '<tt>*lu</tt>': causes the function to read a line of text from the
+socket. The line  is assumed to be terminated by  a single LF character.
+If the LF character is is preceeded  by a CR character, the CR character
+is returned in the string, whereas the LF character is not;</li>
 
-<li> <tt>number</tt>: causes the function to read <tt>number</tt>
-raw bytes from the socket. This is the fastest pattern and should
-be used whenever possible.</li> 
-</ul>
+<li> '<tt>*a</tt>':  causes the function  to read from the  socket until
+the connection is closed. No translation is performed; </li>
 
-The function returns one string for each pattern, followed by a
-single error code that can be <tt>nil</tt> in case of success,
-the string `<tt>closed</tt>' in case the connection was closed
-before the transmission was complete or the string
-`<tt>timeout</tt>' in case there was a timeout during the
-operation. <p>
+<li> <tt>number</tt>:  causes the  function to read  <tt>number</tt> raw
+bytes from the socket. </li> </ul>
 
+The function returns  one string for each pattern, followed  by a single
+error  code that  can be  <tt>nil</tt> in  case of  success, the  string
+'<tt>closed</tt>'  in   case  the  connection  was   closed  before  the
+transmission was complete or the string '<tt>timeout</tt>' in case there
+was a  timeout during  the operation.  The patterns  <tt>number</tt> and
+'<tt>*a</tt>'  are  the  most  efficient and  should  be  used  whenever
+possible. <p>
 
-<tt><b>timeout(</b>socket, value [, mode]<b>)</b></tt><p>
+<a name=timeout><tt><b>timeout(</b>socket, value [, mode]<b>)</b></tt><p>
 
-Changes the timeout values for the socket <tt>socket</tt>. By
-default, all I/O operations are blocking. That is, any call to
-the functions <tt>send</tt> and <tt>receive</tt> will block
-indefinetely, until the operation completes.  The
-<tt>timeout</tt> function defines a limit on the ammount of time
-the functions can block, specified as the <tt>value</tt>
-parameter, in seconds.  There are two timeout modes, which can be
-used together:
+Changes the timeout  values for the socket  <tt>socket</tt>. By default,
+all I/O  operations are  blocking. That  is, any  call to  the functions
+<tt>send</tt> and  <tt>receive</tt> will  block indefinetely,  until the
+operation completes.  The <tt>timeout</tt>  function defines a  limit on
+the  ammount  of  time  the   functions  can  block,  specified  as  the
+<tt>value</tt> parameter,  in seconds. There  are two timeout  modes and
+both can be used together for fine tuning:
 
 <ul>
-<li> `<tt>b</tt>': <i>blocked</i> timeout. Specifies the upper
-limit on the ammount of time LuaSocket can be blocked by the
-operational system waiting for completion of any I/O
-operation.</li>
-<li> `<tt>r</tt>': <i>return</i> timeout. Specifies the upper
-limit on the ammount of time LuaSocket can block a Lua script while
-performing an I/O operation.</li> 
-</ul>
+<li> '<tt>b</tt>': <i>blocked</i> timeout.  Specifies the upper limit on
+the ammount  of time LuaSocket  can be  blocked by the  operating system
+while waiting for completion of any single I/O operation;</li>
+
+<li> '<tt>r</tt>':  <i>return</i> timeout. Specifies the  upper limit on
+the ammount of time LuaSocket can block  a Lua script before returning a
+function call.</li> </ul>
+
+<h2> <a name=proto> Supported Protocols Reference </h2>
+
+Besides raw  TCP/IP transport layer capabilities,  the LuaSocket toolkit
+offers straightforward support for the HTTP, SMTP and FTP protocols. The
+support is implemented  in the Lua language and is  distributed as three
+separate modules.
+
+<h3> <a name=smtp> SMTP </h3>
+
+The  module  <tt>smtp.lua</tt>  provides functionality  to  send  e-mail
+messages to a SMTP mail server. The implementation conforms to
+<a href="http://www.tecgraf.puc-rio.br/~diego/rfc/rfc0821.txt">RFC 821</a>.<p>
+
+MIME Headers are represented as a table in the form:<p>
+
+<pre>
+headers = {
+  ["field-1-name"] = "field-1-value",
+  ["field-2-name"] = "field-2-value",
+  ["field-3-name"] = "field-3-value",
+         ...               ...
+  ["field-n-name"] = "field-n-value"
+}
+</pre>
+
+The module exports two functions: <p>
+
+<a name=smtp_mail><tt><b>smtp_mail(</b>from, rcpt, headers, body,
+server<b>)</b></tt><p>
+
+Sends a message to recipient list <tt>rcpt</tt>, a lua table. The sender
+is given by the e-mail address <tt>from</tt>. The message is composed by
+the optional  MIME Headers <tt>headers</tt> and  text <tt>body</tt>. The
+message is  sent using the  server <tt>server</tt>. If  successfull, the
+function returns  <tt>nil</tt>, otherwise an error  message is returned.
+<p>
+
+Examples: <br>
+
+<pre>
+headers = {
+  to = "fulano@tecgraf.puc-rio.br, beltrano@tecgraf.puc-rio.br",
+  subject = "LuaSocket test message"
+}
+from = "luasocket@tecgraf.puc-rio.br"
+rcpt = {
+  "fulano@tecgraf.puc-rio.br",
+  "beltrano@tecgraf.puc-rio.br",
+  "sicrano@tecgraf.puc-rio.br"
+}
+body = "This is a test message. Please ignore."
+server = "localhost"
+-- connects to server "localhost" and sends a message to users 
+-- "fulano@tecgraf.puc-rio.br" and "beltrano@tecgraf.puc-rio.br"
+-- "sicrano@tecgraf.puc-rio.br" receives a 'blind carbon copy' of the message.
+e = smtp_mail(from, rcpt, headers, body, server)
+
+</pre>
+
+<a name=mail><tt><b>mail{</b>to=tolist, from=<i>frm</i>, subject=<i>sbj</i>, message=<i>msg</i>, cc=<i>cclist</i>, bcc=<i>bcclist</i>, mailserver=<i>server</i><b>}</b></tt><p>
+
+The <tt>mail</tt> function, for compatibility, implements the same interface
+as that of <a href="http://www.tecgraf.puc-rio.br/cgilua">CGILua 3.2</a>, 
+except the <tt>mailserver</tt> parameter is mandatory.<p>
+
+<table>
+<tr><td><i>to</i>:</td><td>A comma-separated list of the emails of the recipients of the message.</td> </tr>
+<tr><td><i>from</i>:</td><td>The email of the sender.</td></tr>
+<tr><td><i>subject</i>:</td><td>(Optional). The subject of the message.</td></tr>
+<tr><td><i>message</i>:</td><td> (Optional). The body of the message. </td></tr>
+<tr><td><i>cc</i>:</td><td> (Optional). A comma-separated list of the emails of the recipients "carbon-copy" of the message. </td></tr>
+<tr><td><i>bcc</i>:</td><td> (Optional). A comma-separated list of the emails of the recipients "blind carbon-copy" of the message. </td></tr>
+<tr><td><i>mailserver</i>:</td><td> address of SMTP server to be used.</td></tr>
+</table><p>
+
+The function returns <tt>nil</tt> if  the message was sent successfully.
+In case of error, an error message is returned.<p>
+
+<h3> <a name=http> HTTP </h3>
+
+The module  <tt>http.lua</tt> provides functionality to  download an URL
+from  an  HTTP  server.  The implementation  conforms  to  the  HTTP/1.1
+standard,
+<a href="http://www.tecgraf.puc-rio.br/~diego/rfc/rfc2068.txt">RFC 2068</a>. 
+<p>
+
+URLs must conform to 
+<a href="http://www.tecgraf.puc-rio.br/~diego/rfc/rfc1738.txt">RFC 1738</a>, 
+that is, an URL is a string in the form: <p>
+
+<pre>[http://][&lt;user&gt;[:&lt;password&gt;]@]&lt;host&gt;[:&lt;port&gt;][/&lt;path&gt;] </pre>
+
+MIME Headers are represented as a table in the form:<p>
+
+<pre>
+headers = {
+  ["field-1-name"] = "field-1-value",
+  ["field-2-name"] = "field-2-value",
+  ["field-3-name"] = "field-3-value",
+         ...               ...
+  ["field-n-name"] = "field-n-value"
+}
+</pre>
+
+Field names are case insensitive (as  specified by the standard) and all
+API functions  work with  lowercase field names.  Field values  are left
+unmodified.<p>
+
+The module exports one function: <p>
+
+<a name=http_get><tt><b>http_get(</b>url [, headers]<b>)</b></tt><p>
+
+Retrieves the URL <tt>url</tt> sending the MIME Headers <tt>headers</tt>
+along with the request.<p>
+
+If successfull, the function returns the body of the document pointed to
+by <tt>url</tt>, the mime headers returned by the server, and the server
+HTTP status  reply. In case of  error, the function returns  whatever it
+managed to  retrieve (<tt>nil</tt> values representing  failure) and and
+an  error message  describing  the error.  If <tt>&lt;user&gt;</tt>  and
+<tt>&lt;password&gt;</tt> are provided in the URL, the function uses the
+Basic Authentication  Scheme (see  <a href=#basic>note</a>)  to retrieve
+the document. <p>
+
+Examples: <br>
+
+<pre>
+-- connect to server "www.tecgraf.puc-rio.br" and retrieves this manual
+-- file from "~diego/luasocket/manual.html"
+f, m, s, e = http_get("http://www.tecgraf.puc-rio.br/~diego/luasocket/manual.html")
+
+-- connect to server "www.tecgraf.puc-rio.br" and tries to retrieve
+-- "~diego/auth/index.html". Fails because authentication is needed.
+f, m, s, e = http_get("http://www.tecgraf.puc-rio.br/~diego/auth/index.html")
+-- s returns with value "401 Authentication Required"
+
+</pre>
+
+<a  name=basic> Note:  Some URLs  are  protected by  their servers  from
+anonymous download. For those URLs, the server must receive some sort of
+authentication  along with  the request  or  it will  deny download  and
+return status "401 Authentication Required". <p>
+
+The  HTTP/1.1 standard  defines  two authentication  methods: the  Basic
+Authentication  Scheme   and  the  Digest  Authentication   Sheme,  both
+explained in detail in 
+<a href="http://www.tecgraf.puc-rio.br/~diego/rfc/rfc2068.txt">RFC 2068</a>.
+<p>
+
+The   Basic  Authentication   Scheme  sends   <tt>&lt;user&gt;</tt>  and
+<tt>&lt;password&gt;</tt>  unencrypted to  the server  and is  therefore
+considered unsafe.  Unfortunatelly, by the time  of this implementation,
+the wide majority of servers and browsers support the Basic Scheme only.
+Therefore,   this  is   the  method   used  by   the  toolkit   whenever
+authentication is required.<p>
+
+Example:
+<pre>
+-- connect to server "www.tecgraf.puc-rio.br" and tries to retrieve
+-- "~diego/auth/index.html", using the provided name and password to
+-- authenticate the request
+f, m, s, e = http_get("http://diego:nehab@www.tecgraf.puc-rio.br/~diego/auth/index.html")
+
+-- alternatively, one could fill the appropriate header and authenticate
+-- the request directly. both calls are equivalent
+h = {authentication = "Basic " .. base64("diego:nehab")}
+f, m, s, e = http_get("http://www.tecgraf.puc-rio.br/~diego/auth/index.html", h)
+
+</pre>
+
+<h3> <a name=ftp> FTP </h3>
+
+The module  <tt>ftp.lua</tt> provides  functions to download  and upload
+files  from  and to  FTP  servers.  The  implementation conforms  to  
+<a href="http://www.tecgraf.puc-rio.br/~diego/rfc/rfc0959.txt">RFC 959</a>.
+<p>
+
+URLs must conform to 
+<a href="http://www.tecgraf.puc-rio.br/~diego/rfc/rfc1738.txt">RFC 1738</a>, 
+that is, an URL is a string in the form: <p>
+
+<pre>[ftp://][&lt;user&gt;[:&lt;password&gt;]@]&lt;host&gt;[:&lt;port&gt;][/&lt;path&gt;] </pre>
+
+The module exports two functions: <p>
+
+<a name=ftp_get><tt><b>ftp_get(</b>url [, type]<b>)</b></tt><p>
+
+Downloads  the URL  <tt>url</tt> using  transfer type  <tt>type</tt> and
+returns it as a  string. <p>
+
+The parameter <tt>type</tt> can  receive values '<tt>a</tt>' (ascii, the
+default) or '<tt>b</tt>'  (binary) and determines the  transfer type. If
+<tt>&lt;path&gt;</tt> ends  with a '<tt>/</tt>', a  directory listing of
+<tt>&lt;path&gt;</tt> is returned. If  successfull, the function returns
+the file  contents as a string.  In case of error,  the function returns
+<tt>nil</tt> and an error message describing the error. <p>
+
+If no <tt>&lt;user&gt;</tt> is provided, the function tries to log in as
+'<tt>anonymous</tt>'.<p>
+
+Examples: <br>
+
+<pre>
+-- log as user "anonymous" on server "ftp.tecgraf.puc-rio.br"
+-- go to directory "pub/lua" and get file "lua.tar.gz" as binary.
+f, e = ftp_get("ftp://ftp.tecgraf.puc-rio.br/pub/lua/lua.tar.gz", "b")
+
+-- log as user "anonymous" on server "ftp.tecgraf.puc-rio.br"
+-- go to director "pub" and retrive directory listing of directory "lua"
+f, e = ftp_get("ftp://ftp.tecgraf.puc-rio.br/pub/lua/")
+
+-- log as user "diego", password "nehab", on server "derain.tecgraf.puc-rio.br"
+-- go to directory "tec/luasocket/html" and retrieve file "manual.html"
+-- (actually, fails because of wrong password :-)
+f, e = ftp_get("ftp://diego:nehab@derain.tecgraf.puc-rio.br/tec/luasocket/html/manual.html")
+
+</pre>
+
+<a name=ftp_put><tt><b>ftp_put(</b>url, data [, type]<b>)</b></tt><p>
+
+Stores  a  file  at  <tt>url</tt> with  contents  given  by  the  string
+<tt>data</tt> and using transfer type <tt>type</tt>. <p>
+
+The parameter <tt>type</tt> can  receive values '<tt>a</tt>' (ascii, the
+default) or '<tt>b</tt>'  (binary) and determines the  transfer type. If
+successfull, the  function returns <tt>nil</tt>.  In case of  error, the
+function returns a string describing the error.<p>
+
+If no <tt>&lt;user&gt;</tt> is provided, the function tries to log in as
+anonymous.<p>
+
+Examples: <br>
+
+<pre>
+-- log as user "anonymous" on server "ftp.free.org" and store file
+-- "hello" with contents "hello world!" on current directory
+e = ftp_put("ftp://ftp.free.org/hello", "hello world!")
+
+</pre>
 
 <hr>
 <small>
 Last modified by Diego Nehab<br>
-Wed Nov  8 16:32:38 EDT 2000
+Wed Dec 27 19:18:50 EDT 2000
 </small>
 
 </body>

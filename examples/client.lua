@@ -1,5 +1,5 @@
 -----------------------------------------------------------------------------
--- NetLib automated test module
+-- LuaSocket automated test module
 -- client.lua
 -- This is the client module. It connects with the server module and executes
 -- all tests.
@@ -22,10 +22,10 @@ end
 new_test("initializing...")
 dofile("command.lua")
 test_debug_mode()
-while c == nil do
+while control == nil do
 	print("client: trying control connection...")
-	c, err = connect(HOST, PORT)
-	if c then
+	control, err = connect(HOST, PORT)
+	if control then
 		print("client: control connection stablished!") 
 	else
 		sleep(2)
@@ -36,7 +36,6 @@ end
 -- Make sure server is ready for data transmission
 -----------------------------------------------------------------------------
 function sync()
-	print("client: synchronizing...")
 	send_command(SYNC)
 	get_command()
 end
@@ -45,21 +44,20 @@ end
 -- Close and reopen data connection, to get rid of any unread blocks
 -----------------------------------------------------------------------------
 function reconnect()
-	if d then 
-		d:close() 
+	if data then 
+		data:close() 
 		send_command(CLOSE)
-		d = nil
+		data = nil
 	end
-	while d == nil do
+	while data == nil do
 		send_command(CONNECT)
-		print("client: waiting for data connection...")
-		d = connect(HOST, PORT)
-		if d then 
-			print("client: data connection stablished!") 
-		else
+		data = connect(HOST, PORT)
+		if not data then 
+			print("client: waiting for data connection.") 
 			sleep(1)
 		end
 	end
+	sync()
 end
 
 -----------------------------------------------------------------------------
@@ -67,6 +65,7 @@ end
 -----------------------------------------------------------------------------
 function test_command(cmd, par)
 	local cmd_back, par_back
+	reconnect()
 	send_command(COMMAND)
 	write("testing command ")
 	print_command(cmd, par)
@@ -85,18 +84,50 @@ end
 --   len: length of line to be tested
 -----------------------------------------------------------------------------
 function test_asciiline(len)
-	local str, str10, back
+	local str, str10, back, err
+	reconnect()
 	send_command(ECHO_LINE)
 	str = strrep("x", mod(len, 10))
 	str10 = strrep("aZb.c#dAe?", floor(len/10))
 	str = str .. str10
 	write("testing ", len, " byte(s) line\n")
-	err = d:send(str, "\n")
+	err = data:send(str, "\n")
 	if err then fail(err) end
-	back, err = d:receive()
+	back, err = data:receive()
 	if err then fail(err) end
 	if back == str then pass("lines match")
 	else fail("lines don't match") end
+end
+
+-----------------------------------------------------------------------------
+-- Tests closed connection detection
+-----------------------------------------------------------------------------
+function test_closed()
+	local str = "This is our little test line"
+	local len = strlen(str)
+	local back, err, total
+	reconnect()
+	print("testing close while reading line")
+	send_command(ECHO_BLOCK, len)
+	data:send(str)
+	send_command(CLOSE)
+	-- try to get a line 
+	back, err = data:receive()
+	if not err then fail("shold have gotten 'closed'.")
+	elseif err ~= "closed" then fail("got '"..err.."' instead of 'closed'.")
+	elseif str ~= back then fail("didn't receive what i should 'closed'.")
+	else pass("rightfull 'closed' received") end
+	reconnect()
+	print("testing close while reading block")
+	send_command(ECHO_BLOCK, len)
+	data:send(str)
+	send_command(CLOSE)
+	-- try to get a line 
+	back, err = data:receive(2*len)
+	if not err then fail("shold have gotten 'closed'.")
+	elseif err ~= "closed" then fail("got '"..err.."' instead of 'closed'.")
+	elseif str ~= back then fail("didn't receive what I should.")
+	else pass("rightfull 'closed' received") end
 end
 
 -----------------------------------------------------------------------------
@@ -105,15 +136,16 @@ end
 --   len: length of line to be tested
 -----------------------------------------------------------------------------
 function test_rawline(len)
-	local str, str10, back
+	local str, str10, back, err
+	reconnect()
 	send_command(ECHO_LINE)
 	str = strrep(strchar(47), mod(len, 10))
 	str10 = strrep(strchar(120,21,77,4,5,0,7,36,44,100), floor(len/10))
 	str = str .. str10
 	write("testing ", len, " byte(s) line\n")
-	err = d:send(str, "\n")
+	err = data:send(str, "\n")
 	if err then fail(err) end
-	back, err = d:receive()
+	back, err = data:receive()
 	if err then fail(err) end
 	if back == str then pass("lines match")
 	else fail("lines don't match") end
@@ -126,17 +158,18 @@ end
 -----------------------------------------------------------------------------
 function test_block(len)
 	local half = floor(len/2)
-	local s1, s2, back
+	local s1, s2, back, err
+	reconnect()
 	send_command(ECHO_BLOCK, len)
 	write("testing ", len, " byte(s) block\n")
 	s1 = strrep("x", half)
-	err = d:send(s1)
+	err = data:send(s1)
 	if err then fail(err) end
 	sleep(1)
 	s2 = strrep("y", len-half)
-	err = d:send(s2)
+	err = data:send(s2)
 	if err then fail(err) end
-	back, err = d:receive(len)
+	back, err = data:receive(len)
 	if err then fail(err) end
 	if back == s1..s2 then pass("blocks match")
 	else fail("blocks don't match") end
@@ -195,20 +228,21 @@ end
 -----------------------------------------------------------------------------
 function test_blockedtimeout(len, t, s)
 	local str, err, back, total
+	reconnect()
 	send_command(RECEIVE_BLOCK, len)
 	send_command(SLEEP, s)
 	send_command(RECEIVE_BLOCK, len)
 	write("testing ", len, " bytes, ", t, 
 		"s block timeout, ", s, "s sleep\n")
-	d:timeout(t)
+	data:timeout(t)
 	str = strrep("a", 2*len)
-	err, total = d:send(str)
+	err, total = data:send(str)
 	if blockedtimed_out(t, s, err, "send") then return end
 	if err then fail(err) end
 	send_command(SEND_BLOCK)
 	send_command(SLEEP, s)
 	send_command(SEND_BLOCK)
-	back, err = d:receive(2*len)
+	back, err = data:receive(2*len)
 	if blockedtimed_out(t, s, err, "receive") then return end
 	if err then fail(err) end
 	if back == str then pass("blocks match")
@@ -224,21 +258,22 @@ end
 -----------------------------------------------------------------------------
 function test_returntimeout(len, t, s)
 	local str, err, back, delta, total
+	reconnect()
 	send_command(RECEIVE_BLOCK, len)
 	send_command(SLEEP, s)
 	send_command(RECEIVE_BLOCK, len)
 	write("testing ", len, " bytes, ", t, 
 		"s return timeout, ", s, "s sleep\n")
-	d:timeout(t, "return")
+	data:timeout(t, "return")
 	str = strrep("a", 2*len)
-	err, total, delta = d:send(str)
+	err, total, delta = data:send(str)
 	print("delta: " .. delta)
 	if returntimed_out(delta, t, err) then return end
 	if err then fail(err) end
 	send_command(SEND_BLOCK)
 	send_command(SLEEP, s)
 	send_command(SEND_BLOCK)
-	back, err, delta = d:receive(2*len)
+	back, err, delta = data:receive(2*len)
 	print("delta: " .. delta)
 	if returntimed_out(delta, t, err) then return end
 	if err then fail(err) end
@@ -257,8 +292,38 @@ test_command(ECHO_BLOCK, 12234)
 test_command(SLEEP, 1111)
 test_command(ECHO_LINE)
 
+new_test("connection close test")
+test_closed()
+
+new_test("binary string test")
+test_rawline(1)
+test_rawline(17)
+test_rawline(200)
+test_rawline(3000)
+test_rawline(8000)
+test_rawline(40000)
+
+new_test("blocking transfer test")
+test_block(1)
+test_block(17)
+test_block(200)
+test_block(3000)
+test_block(80000)
+test_block(800000)
+
+new_test("non-blocking transfer test")
+-- the value is not important, we only want 
+-- to test non-blockin I/O anyways
+data:timeout(200)
+test_block(1)
+test_block(17)
+test_block(200)
+test_block(3000)
+test_block(80000)
+test_block(800000)
+test_block(8000000)
+
 new_test("character string test")
-reconnect()
 test_asciiline(1)
 test_asciiline(17)
 test_asciiline(200)
@@ -266,86 +331,29 @@ test_asciiline(3000)
 test_asciiline(8000)
 test_asciiline(40000)
 
-new_test("binary string test")
-reconnect()
-test_rawline(40000)
-test_rawline(1)
-test_rawline(17)
-test_rawline(200)
-test_rawline(3000)
-test_rawline(8000)
-
-new_test("block transfer test")
-reconnect()
-test_block(400000)
-test_block(1)
-test_block(17)
-test_block(200)
-test_block(3000)
-test_block(8000)
-
-new_test("block transfer with timeout test")
-reconnect()
--- the value is not important, we only want 
--- to test non-blockin I/O anyways
-d:timeout(200)
-test_block(1)
-test_block(17)
-test_block(200)
-test_block(3000)
-test_block(8000)
-test_block(80000)
-
 new_test("return timeout test")
-reconnect()
-sync()
-test_returntimeout(60, .5, 1)
-reconnect()
-sync()
-test_returntimeout(60, 1, 0.5)
-reconnect()
-sync()
-test_returntimeout(6000, .5, 0)
-reconnect()
-sync()
-test_returntimeout(60000, .5, 0)
-reconnect()
-sync()
-test_returntimeout(600000, .5, 0)
-reconnect()
-sync()
-test_returntimeout(8000000, .5, 0)
+test_returntimeout(80, .5, 1)
+test_returntimeout(80, 1, 0.5)
+test_returntimeout(8000, .5, 0)
+test_returntimeout(80000, .5, 0)
+test_returntimeout(800000, .5, 0)
 
 new_test("blocked timeout test")
-reconnect()
-sync()
-test_blockedtimeout(60, .5, 1)
-reconnect()
-sync()
-test_blockedtimeout(60, 1, 1)
-reconnect()
-sync()
-test_blockedtimeout(60, 1.5, 1)
-reconnect()
-sync()
-test_blockedtimeout(600, 1, 0)
-reconnect()
-sync()
-test_blockedtimeout(6000, 1, 0)
-reconnect()
-sync()
-test_blockedtimeout(60000, 1, 0)
-reconnect()
-sync()
-test_blockedtimeout(600000, 1, 0)
+test_blockedtimeout(80, .5, 1)
+test_blockedtimeout(80, 1, 1)
+test_blockedtimeout(80, 1.5, 1)
+test_blockedtimeout(800, 1, 0)
+test_blockedtimeout(8000, 1, 0)
+test_blockedtimeout(80000, 1, 0)
+test_blockedtimeout(800000, 1, 0)
 
 -----------------------------------------------------------------------------
 -- Close connection and exit server. We are done.
 -----------------------------------------------------------------------------
 new_test("the library has passed all tests")
-sync()
 print("client: closing connection with server")
 send_command(CLOSE)
 send_command(EXIT)
-c:close()
+control:close()
 print("client: exiting...")
+exit()

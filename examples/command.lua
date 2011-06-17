@@ -43,11 +43,11 @@ end
 -----------------------------------------------------------------------------
 function send_command(cmd, par)
     if (cmd == RECEIVE_BLOCK) or (cmd == ECHO_BLOCK) then
-        c:send(cmd,format("%10d", par))
+        control:send(cmd,format("%10d", par))
     elseif (cmd == SLEEP) then
-        c:send(cmd,format("%10d", par))
+        control:send(cmd,format("%10d", par))
     else
-        c:send(cmd)
+        control:send(cmd)
     end
 end
 
@@ -73,20 +73,20 @@ end
 --   the command followed by any parameters, if needed
 -----------------------------------------------------------------------------
 function get_command()
-    local cmd, err = c:receive(5)
+    local cmd, err = control:receive(5)
     if err then
-print(err)
+		print(err)
         return nil, err
     end
     if (cmd == RECEIVE_BLOCK) or (cmd == ECHO_BLOCK) then
-        local par, err = c:receive(10)
+        local par, err = control:receive(10)
         if err then
             return nil
         end
 		par = tonumber(par)
         return cmd, par
     elseif (cmd == SLEEP) then
-        local par, err = c:receive(10)
+        local par, err = control:receive(10)
         if err then
             return nil
         end

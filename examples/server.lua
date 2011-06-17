@@ -1,5 +1,5 @@
 -----------------------------------------------------------------------------
--- NetLib automated test module
+-- LuaSocket automated test module
 -- server.lua
 -- This is the server module. It's completely controled by the client module
 -- by the use of a control connection.
@@ -14,13 +14,13 @@ test_debug_mode()
 -----------------------------------------------------------------------------
 -- Bind to address and wait for control connection
 -----------------------------------------------------------------------------
-s, err = bind(HOST, PORT)
-if err then
+server, err = bind(HOST, PORT)
+if not server then
 	print(err)
 	exit(1)
 end
 print("server: waiting for control connection...")
-c = s:accept()
+control = server:accept()
 print("server: control connection stablished!")
 
 -----------------------------------------------------------------------------
@@ -32,30 +32,36 @@ print("server: control connection stablished!")
 function execute_command(cmd, par)
 	if cmd == CONNECT then
 		print("server: waiting for data connection...")
-		d = s:accept()
-		print("server: data connection stablished!")
+		data = server:accept()
+		if not data then
+			fail("server: unable to start data connection!")
+		else
+			print("server: data connection stablished!")
+		end
 	elseif cmd == CLOSE then
 		print("server: closing connection with client...")
-		d:close()
-		d = nil
+		if data then 
+			data:close()
+			data = nil
+		end
 	elseif cmd == ECHO_LINE then
-		str, err = d:receive()
+		str, err = data:receive()
 		if err then fail("server: " .. err) end
-		err = d:send(str, "\n")
+		err = data:send(str, "\n")
 		if err then fail("server: " .. err) end
 	elseif cmd == ECHO_BLOCK then
-		str, err = d:receive(par)
+		str, err = data:receive(par)
 		if err then fail("server: " .. err) end
-		err = d:send(str)
+		err = data:send(str)
 		if err then fail("server: " .. err) end
 	elseif cmd == RECEIVE_BLOCK then
-		str, err = d:receive(par)
+		str, err = data:receive(par)
 	elseif cmd == SEND_BLOCK then
-		err = d:send(str)
+		err = data:send(str)
 	elseif cmd == ECHO_TIMEOUT then
-		str, err = d:receive(par)
+		str, err = data:receive(par)
 		if err then fail("server: " .. err) end
-		err = d:send(str)
+		err = data:send(str)
 		if err then fail("server: " .. err) end
 	elseif cmd == COMMAND then
 		cmd, par = get_command()

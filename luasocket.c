@@ -201,6 +201,8 @@ static void receive_dosline(lua_State *L, p_sock sock, int start,
 	int *err, int *end);
 static void receive_unixline(lua_State *L, p_sock sock, int start, 
 	int *err, int *end);
+static void receive_all(lua_State *L, p_sock sock, int start, 
+  int *err, int *end);
 
 /*=========================================================================*\
 * Test support functions
@@ -323,7 +325,7 @@ static int net_accept(lua_State *L)
 	int client_tag, server_tag;
 	p_sock server;
 	int client_sock = -1;
-	unsigned int client_len = sizeof(client_addr);
+	size_t client_len = sizeof(client_addr);
 	p_sock client;
 	pop_tags(L, &client_tag, &server_tag);
 	server = check_server(L, 1, server_tag);
@@ -353,7 +355,7 @@ static int net_accept(lua_State *L)
 *   backlog: optional parameter specifying the number of connections
 *     to keep waiting before refuse a connection. the default value is 1.
 * Returns
-*   On success: server socket bound to address
+*   On success: server socket bound to address, the ip address and port bound
 *   On error: nil, followed by an error message
 \*-------------------------------------------------------------------------*/
 static int net_bind(lua_State *L)
@@ -362,6 +364,7 @@ static int net_bind(lua_State *L)
 	unsigned short port = (unsigned short) luaL_check_number(L, 2);
 	unsigned int backlog = (unsigned int) luaL_opt_number(L, 3, 1.0);	
 	struct sockaddr_in server;
+	size_t server_size = sizeof(server);
 	int client_tag, server_tag;
 	p_sock sock = create_tcpsock();
 	pop_tags(L, &client_tag, &server_tag);
@@ -378,7 +381,7 @@ static int net_bind(lua_State *L)
 		lua_pushstring(L, host_strerror());
 		return 2;
 	}
-	else if (bind(sock->sock,(struct sockaddr *)&server,sizeof(server)) < 0) {
+	else if (bind(sock->sock,(struct sockaddr *)&server, server_size) < 0) {
 		lua_pushnil(L);
 		lua_pushstring(L, bind_strerror());
 		return 2;
@@ -391,9 +394,16 @@ static int net_bind(lua_State *L)
 	} 
 	/* pass the created socket to Lua, as a server socket */
 	else {
+		/* pass server */
 		push_server(L, sock, server_tag);
+		/* get used address and port */
+		getsockname(sock->sock, (struct sockaddr *)&server, &server_size);
+		/* pass ip number */
+		lua_pushstring(L, inet_ntoa(server.sin_addr));
+		/* pass port number */
+		lua_pushnumber(L, ntohs(server.sin_port));
 		lua_pushnil(L);
-		return 2;
+		return 4;
 	}
 }
 
@@ -499,7 +509,7 @@ lua_pushnumber(L, (end-start)/1000.0);
 \*-------------------------------------------------------------------------*/
 static int net_receive(lua_State *L)
 {
-	static const char *const modenames[] = {"*l", "*lu", NULL};
+	static const char *const modenames[] = {"*l", "*lu", "*a", NULL};
 	int err = NET_DONE, arg = 2;
 	int start = get_time();
 	int end;
@@ -538,6 +548,10 @@ printf("luasocket: receive start\n");
 				/* Unix line mode */
 				case 1:
 					receive_unixline(L, sock, start, &err, &end);
+					break;
+				/* 'Til closed mode */
+				case 2:
+					receive_all(L, sock, start, &err, &end);
 					break;
 				/* else it must be a number, raw mode */
 				default: 
@@ -673,20 +687,10 @@ static int sock_gc(lua_State *L)
 static void handle_sigpipe(void);
 static void handle_sigpipe(void)
 {
-	struct sigaction old, new;
-	bzero(&new, sizeof new);
+	struct sigaction new;
+	memset(&new, 0, sizeof(new));
 	new.sa_handler = SIG_IGN;
-	sigaction(SIGPIPE, &new, &old);
-	/* test if the signal had been before, and restore it if so */
-	if (old.sa_handler != SIG_DFL) {
-#ifdef _DEBUG
-/* this is a somewhat dangerous situation. we can only hope the
-** installed signal handler understands that this signal can be
-** raised by a socket operation */
-printf("SIGPIPE ALREADY REDEFINED!!!\n");
-#endif
-		sigaction(SIGPIPE, &old, NULL);
-	}
+	sigaction(SIGPIPE, &new, NULL);
 }
 #endif
 
@@ -751,19 +755,24 @@ static int fill_sockaddr(struct sockaddr_in *address, const char *hostname,
 {
 	struct hostent *host = NULL;
 	unsigned long addr = inet_addr(hostname);
-	/* BSD says we could have used gethostbyname even if the hostname is
-	** in ip address form, but WinSock2 says we can't. Therefore we
-	** choose a method that works on both plataforms */
-	if (addr == INADDR_NONE)
-		host = gethostbyname(hostname);
-	else
-		host = gethostbyaddr((char * ) &addr, sizeof(unsigned long), AF_INET);
-	if (!host) 
-		return 0;
 	memset(address, 0, sizeof(struct sockaddr_in));
+	if (strcmp(hostname, "*")) {
+		/* BSD says we could have used gethostbyname even if the hostname is
+		** in ip address form, but WinSock2 says we can't. Therefore we
+		** choose a method that works on both plataforms */
+		if (addr == INADDR_NONE)
+			host = gethostbyname(hostname);
+		else
+			host = gethostbyaddr((char * ) &addr, sizeof(unsigned long), 
+				AF_INET);
+		if (!host) 
+			return 0;
+		memcpy(&(address->sin_addr), host->h_addr, (unsigned) host->h_length);
+	} else {
+		address->sin_addr.s_addr = htonl(INADDR_ANY);
+	}
 	address->sin_family = AF_INET;
 	address->sin_port = htons(port);
-	memcpy(&(address->sin_addr), host->h_addr, (unsigned) host->h_length);
 	return 1;
 }
 
@@ -909,7 +918,7 @@ static int send_raw(p_sock sock, const char *data, int wanted,
 			return total;
 		}
 #ifdef _DEBUG_BLOCK
-printf("luasocket: sent %d bytes, %dms elapsed\n", put, time_since(start));
+printf("luasocket: sent %d, wanted %d, %dms elapsed\n", put, wanted, time_since(start));
 #endif
 		wanted -= put;
 		data += put;
@@ -927,7 +936,6 @@ printf("luasocket: sent %d bytes, %dms elapsed\n", put, time_since(start));
 *   wanted: number of bytes to be read
 *   start: time the operation started, in ms
 * Output
-*   data: pointer to an internal buffer containing the data read
 *   err: operation error code. NET_DONE, NET_TIMEOUT or NET_CLOSED
 * Returns
 *   Number of bytes read
@@ -971,6 +979,44 @@ printf("luasocket: wanted %d, got %d, %dms elapsed\n", wanted, got, time_since(s
 }
 
 /*-------------------------------------------------------------------------*\
+* Reads everything until the connection is closed
+* Input
+*   sock: socket structure being used in operation
+*   start: time the operation started, in ms
+* Output
+*   err: operation error code. NET_DONE, NET_TIMEOUT or NET_CLOSED
+* Result
+*   a string is pushed into the Lua stack with the line just read
+\*-------------------------------------------------------------------------*/
+static void receive_all(lua_State *L, p_sock sock, int start, 
+  int *err, int *end)
+{
+	int got;
+	char *buffer;
+	luaL_Buffer b;
+  	*end = start;
+	luaL_buffinit(L, &b);
+	for ( ;; ) {
+		buffer = luaL_prepbuffer(&b);
+		if (read_or_timeout(sock, time_since(start))) {
+#ifdef _DEBUG
+*end = get_time();
+#endif
+			got = recv(sock->sock, buffer, LUAL_BUFFERSIZE, 0);
+			if (got <= 0) { 
+				*err = NET_DONE;
+				break;
+			}
+			luaL_addsize(&b, got);
+		} else {
+			*err = NET_TIMEOUT;
+			break;
+		}
+	}
+	luaL_pushresult(&b);
+}
+
+/*-------------------------------------------------------------------------*\
 * Reads a line terminated by a CR LF pair or just by a LF. The CR and LF 
 * are not returned by the function. All operations are non-blocking and the
 * function respects the timeout values in sock.
@@ -989,7 +1035,6 @@ static void receive_dosline(lua_State *L, p_sock sock, int start,
 {
 	char c = ' ';
 	long got = 0;
-	const char *data;
 	luaL_Buffer b;
   	*end = start;
 	luaL_buffinit(L, &b);
