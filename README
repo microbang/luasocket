@@ -2,13 +2,16 @@ Description of the distribution components:
 
 Files:
 
-	luasocket.c				-- LuaSocket implementation
-	luasocket.h				-- library include file
+    luasocket.c             -- LuaSocket implementation
+    luasocket.h             -- library include file
+    makefile                -- simple makefile for a test executable
+    lua.c                   -- lua.c modified to initialize the library
 
 Directories:
 
-	lua						-- supported protocols implementation
-	examples				-- sample code
-	html					-- documentation
+    lua                     -- supported protocols implementation
+    examples                -- sample code
+    test                    -- some of the automated test scripts
+    html                    -- documentation
 
 Please send any comments to diego@tecgraf.puc-rio.br
