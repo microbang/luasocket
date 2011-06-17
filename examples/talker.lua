@@ -1,3 +1,9 @@
+-----------------------------------------------------------------------------
+-- TCP sample: Little program to send text lines to a given host/port
+-- LuaSocket sample files
+-- Author: Diego Nehab
+-- RCS ID: $Id: talker.lua,v 1.5 2003/06/26 18:47:47 diego Exp $
+-----------------------------------------------------------------------------
 host = host or "localhost"
 port = port or 8080
 if arg then
@@ -5,18 +11,18 @@ if arg then
 	port = arg[2] or port
 end
 print("Attempting connection to host '" ..host.. "' and port " ..port.. "...")
-c, e = connect(host, port)
+c, e = socket.connect(host, port)
 if not c then
 	print(e)
-	exit()
+	os.exit()
 end
 print("Connected! Please type stuff (empty line to stop):")
-l = read()
+l = io.read()
 while l and l ~= "" and not e do
-	e = c:send(l, "\n")
+	t, e = c:send(l, "\n")
 	if e then
 		print(e)
-		exit()
+		os.exit()
 	end
-	l = read()
+	l = io.read()
 end

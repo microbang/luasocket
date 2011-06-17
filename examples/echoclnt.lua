@@ -1,21 +1,27 @@
+-----------------------------------------------------------------------------
+-- UDP sample: echo protocol client
+-- LuaSocket sample files
+-- Author: Diego Nehab
+-- RCS ID: $Id: echoclnt.lua,v 1.6 2003/08/16 00:06:04 diego Exp $
+-----------------------------------------------------------------------------
 host = host or "localhost"
 port = port or 7
 if arg then
     host = arg[1] or host
     port = arg[2] or port
 end
-host = toip(host)
-udp, err = udpsocket()
-if not udp then print(err) exit() end
-err = udp:setpeername(host, port)
-if err then print(err) exit() end
+host = socket.dns.toip(host)
+udp, err = socket.udp()
+assert(udp, err) 
+ret, err = udp:setpeername(host, port)
+assert(ret, err) 
 print("Using host '" ..host.. "' and port " .. port .. "...")
 while 1 do
-	line = read()
-	if not line then exit() end
-	err = udp:send(line)
-	if err then print(err) exit() end
+	line = io.read()
+	if not line then os.exit() end
+	ret, err = udp:send(line)
+	if not ret then print(err) os.exit() end
 	dgram, err = udp:receive()
-	if not dgram then print(err) exit() end
+	if not dgram then print(err) os.exit() end
 	print(dgram)
 end

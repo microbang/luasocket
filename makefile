@@ -1,48 +1,91 @@
-#--------------------------------------------------------------------------
-# luasocket makefile
-# Test executable for luasocket library
-# Diego Nehab, 28/12/2000
-#--------------------------------------------------------------------------
+V=2.0
 
-CC = gcc
-WARNINGS = -Wall
+INSTALL_LUA=/usr/local/lua
+INSTALL_LUASOCKET=$(INSTALL_LUA)/luasocket
 
-# Uncomment this if you are using Lua-4.1-alpha
-# FRIENDLY = -DLUASOCKET_41FRIENDLY
+LUAC=luac
+BIN2C=bin2c
+CC=gcc
+OPT=-O2
 
-# Set LUAINC to the Lua include directory and LUALIB to the
-# Lua library directory
-LUA = /home/i/diego/public/lib/lua-4.0
-LUAINC = $(LUA)/include
-LUALIB = $(LUA)/lib/$(TEC_UNAME)
+OBJS= \
+	luasocket.o \
+	timeout.o \
+	buffer.o \
+	io.o \
+	auxiliar.o \
+	select.o \
+	inet.o \
+	tcp.o \
+	udp.o \
+	usocket.o 
 
-# SunOS and WinSock do not implement inet_aton. We provide ours.
-# ATON = -DLUASOCKET_ATON
+LUAS= \
+	select.lua \
+	auxiliar.lua \
+	concat.lua \
+	code.lua \
+	url.lua \
+	http.lua \
+	smtp.lua \
+	ftp.lua 
 
-LIB = $(LUALIB)/liblualib.a $(LUALIB)/liblua.a -lm
-# WinSock needs ws2_32.lib
-# SunOS needs the following
-# LIB = $(LUALIB)/liblualib.a $(LUALIB)/liblua.a -lm -lsocket -lnsl
+LCHS= $(addsuffix .lch, $(basename $(LUAS)))
+LCS= $(addsuffix .lc, $(basename $(LUAS)))
 
-# to run the test scripts uncomment this
-TEST = -D_DEBUG
+# Linux
+CFLAGS=-O2 -Wall -DLUASOCKET_COMPILED -DLUASOCKET_DEBUG
 
-CFLAGS = $(WARNINGS) $(TEST) $(ATON) $(FRIENDLY) -O2
+DYN=libluasocket.so.$(V)
+STA=libluasocket.a
 
-INC = -I$(LUAINC)
+$(STA): $(OBJS) makefile
+	ar rcu $(STA) $(OBJS)
+	ranlib $(STA)
 
-all: luasocket
+dyn: $(DYN)
 
-luasocket: luasocket.o lua.o
-	$(CC) $(CFLAGS) -o $@ lua.o luasocket.o $(LIB)
+$(DYN): $(OBJS) makefile
+	gcc -shared -o $(DYN) $(OBJS)
 
-lua.o: lua.c luasocket.h
-	$(CC) -c $(CFLAGS) $(INC) -o $@ lua.c
+# dependencies
+auxiliar.o: auxiliar.c auxiliar.h
+buffer.o: buffer.c auxiliar.h buffer.h io.h timeout.h
+inet.o: inet.c luasocket.h inet.h socket.h usocket.h
+io.o: io.c io.h
+luasocket.o: luasocket.c luasocket.h timeout.h buffer.h io.h socket.h \
+  usocket.h inet.h tcp.h udp.h
+usocket.o: usocket.c socket.h usocket.h
+tcp.o: tcp.c luasocket.h auxiliar.h inet.h socket.h usocket.h \
+  tcp.h buffer.h io.h timeout.h
+timeout.o: timeout.c luasocket.h auxiliar.h timeout.h
+udp.o: udp.c luasocket.h auxiliar.h inet.h socket.h usocket.h \
+  udp.h timeout.h
 
-luasocket.o: luasocket.c luasocket.h
-	$(CC) -c $(CFLAGS) $(INC) -o $@ luasocket.c
+luasocket.o: $(LCHS)
+select.o: $(LCHS)
 
-# clean all trash
+.SUFFIXES: .lua .lch .lc
+
+.lua.lc:
+	$(LUAC) -o $@ $<
+
+.lc.lch:
+	$(BIN2C) $< > $@
+
+install:
+	mkdir -p $(INSTALL_LUA)
+	mkdir -p $(INSTALL_LUASOCKET)
+	cp $(DYN) $(INSTALL_LUASOCKET)
+	ln -f -s $(INSTALL_LUASOCKET)/$(DYN) $(INSTALL_LUASOCKET)/libluasocket.so
+	cp luasocket.lua $(INSTALL_LUASOCKET)
+	cp luasocket.h $(INSTALL_LUASOCKET)
+	cp lua.lua $(INSTALL_LUA)
+
 clean:
-	rcsclean
-	rm -f lua.o luasocket.o luasocket core a.out
+	rm -f $(OBJS)
+	rm -f $(DYN)
+	rm -f $(STA)
+	rm -f luasocket
+	rm -f $(LCS)
+	rm -f $(LCHS)

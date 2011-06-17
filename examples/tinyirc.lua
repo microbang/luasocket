@@ -1,68 +1,79 @@
-function set_add(set, sock)
-    tinsert(set, sock)
-end
-
-function set_remove(set, sock)
-    for i = 1, getn(set) do
-        if set[i] == sock then
-           tremove(set, i)
-           break
-        end
-    end 
-end
-
+-----------------------------------------------------------------------------
+-- Select sample: simple text line server
+-- LuaSocket sample files.
+-- Author: Diego Nehab
+-- RCS ID: $Id: tinyirc.lua,v 1.8 2003/08/16 00:06:04 diego Exp $
+-----------------------------------------------------------------------------
 host = host or "*"
 port1 = port1 or 8080
-port2 = port2 or 8081
+port2 = port2 or 8181
 if arg then
     host = arg[1] or host
     port1 = arg[2] or port1
     port2 = arg[3] or port2
 end
 
-server1 = bind(host, port1)
-server1:timeout(1)
-server1.is_server = 1
-server2 = bind(host, port2)
-server2:timeout(1)
-server2.is_server = 1
+server1, error = socket.bind(host, port1)
+assert(server1, error)
+server1:settimeout(1) -- make sure we don't block in accept
+server2, error = socket.bind(host, port2)
+assert(server2, error)
+server2:settimeout(1) -- make sure we don't block in accept
 
-set = {server1, server2}
-number = 1
+io.write("Servers bound\n")
+
+-- simple set implementation
+-- the select function doesn't care about what is passed to it as long as
+-- it behaves like a table
+function newset()
+    local reverse = {}
+    local set = {}
+    setmetatable(set, { __index = {
+        insert = function(set, value) 
+            table.insert(set, value)
+            reverse[value] = table.getn(set)
+        end,
+        remove = function(set, value)
+            table.remove(set, reverse[value])
+            reverse[value] = nil
+        end,
+    }})
+    return set
+end
+
+set = newset()
+
+io.write("Inserting servers in set\n")
+set:insert(server1)
+set:insert(server2)
 
 while 1 do
-    local r, s, e, l, n
-    r, _, e = select(set, nil)
-    for i, v in r do
-        if v.is_server then
-            s = v:accept()
-            if s then 
-                s:timeout(1)
-				s.number = number
-				number = number + 1
-                set_add(set, s) 
-                write("Added client number ", s.number, ". ", 
-					getn(set)-2, " total.\n")
+    local readable, _, error = socket.select(set, nil)
+    for _, input in readable do
+        -- is it a server socket?
+        if input == server1 or input == server2 then
+            io.write("Waiting for clients\n")
+            local new = input:accept()
+            if new then 
+                new:settimeout(1)
+                io.write("Inserting client in set\n")
+                set:insert(new) 
             end
+        -- it is a client socket
         else
-            l, e = v:receive()
-			n = v.number
-            if e then 
-                v:close()
-                set_remove(set, v) 
-                write("Removed client number ", n, ". ",
-					getn(set)-2, " total.\n")
+            local line, error = input:receive()
+            if error then 
+                input:close()
+                io.write("Removing client from set\n")
+                set:remove(input) 
             else
-            	write("Broadcasting line '", tostring(n), "> ", 
-					tostring(l), "'.\n")
-            	_, s, e = select(nil, set, 1)
-            	if not e then
-                	for i,v in s do
-                    	v:send(tostring(n), "> ", l, "\r\n")
+            	io.write("Broadcasting line '", line, "'\n")
+            	__, writable, error = socket.select(nil, set, 1)
+            	if not error then
+                	for ___, output in writable do
+                    	output:send(line .. "\n")
                 	end
-            	else
-                	write("No one ready to listen!!!\n")
-            	end
+            	else io.write("No client ready to receive!!!\n") end
 			end
         end
     end
