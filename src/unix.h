@@ -7,7 +7,7 @@
 * This module is just an example of how to extend LuaSocket with a new 
 * domain.
 *
-* RCS ID: $Id: unix.h,v 1.8 2005/09/29 06:11:42 diego Exp $
+* RCS ID: $Id: unix.h,v 1.9 2006/03/13 07:16:39 diego Exp $
 \*=========================================================================*/
 #include "lua.h"
 
@@ -16,10 +16,10 @@
 #include "socket.h"
 
 typedef struct t_unix_ {
-    t_sock sock;
+    t_socket sock;
     t_io io;
-    t_buf buf;
-    t_tm tm;
+    t_buffer buf;
+    t_timeout tm;
 } t_unix;
 typedef t_unix *p_unix;
 

@@ -2,7 +2,7 @@
 -- Unified SMTP/FTP subsystem
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: tp.lua,v 1.21 2005/11/22 08:33:29 diego Exp $
+-- RCS ID: $Id: tp.lua,v 1.22 2006/03/14 09:04:15 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -109,8 +109,8 @@ function metat.__index:close()
 end
 
 -- connect with server and return c object
-function connect(host, port, create, timeout)
-    local c, e = (create or socket.tcp())
+function connect(host, port, timeout, create)
+    local c, e = (create or socket.tcp)()
     if not c then return nil, e end
     c:settimeout(timeout or TIMEOUT)
     local r, e = c:connect(host, port)

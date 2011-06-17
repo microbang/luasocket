@@ -2,7 +2,7 @@
 -- HTTP/1.1 client support for the Lua language.
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: http.lua,v 1.63 2005/11/22 08:33:29 diego Exp $
+-- RCS ID: $Id: http.lua,v 1.69 2006/04/13 07:00:24 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -194,16 +194,21 @@ local function adjustproxy(reqt)
     end
 end
 
-local function adjustheaders(headers, host)
+local function adjustheaders(reqt)
     -- default headers
     local lower = {
         ["user-agent"] = USERAGENT,
-        ["host"] = host,
+        ["host"] = reqt.host,
         ["connection"] = "close, TE",
         ["te"] = "trailers"
     }
+    -- if we have authentication information, pass it along
+    if reqt.user and reqt.password then
+        lower["authorization"] = 
+            "Basic " ..  (mime.b64(reqt.user .. ":" .. reqt.password))
+    end
     -- override with user headers
-    for i,v in base.pairs(headers or lower) do
+    for i,v in base.pairs(reqt.headers or lower) do
         lower[string.lower(i)] = v
     end
     return lower
@@ -220,16 +225,16 @@ local default = {
 local function adjustrequest(reqt)
     -- parse url if provided
     local nreqt = reqt.url and url.parse(reqt.url, default) or {}
-    local t = url.parse(reqt.url, default)
     -- explicit components override url
     for i,v in base.pairs(reqt) do nreqt[i] = v end
+    if nreqt.port == "" then nreqt.port = 80 end
     socket.try(nreqt.host, "invalid host '" .. base.tostring(nreqt.host) .. "'")
     -- compute uri if user hasn't overriden
     nreqt.uri = reqt.uri or adjusturi(nreqt)
     -- ajust host and port if there is a proxy
     nreqt.host, nreqt.port = adjustproxy(nreqt)
     -- adjust headers in request
-    nreqt.headers = adjustheaders(nreqt.headers, nreqt.host)
+    nreqt.headers = adjustheaders(nreqt)
     return nreqt
 end
 
@@ -242,14 +247,6 @@ local function shouldredirect(reqt, code, headers)
            and (not reqt.nredirects or reqt.nredirects < 5)
 end
 
-local function shouldauthorize(reqt, code)
-    -- if there has been an authorization attempt, it must have failed
-    if reqt.headers and reqt.headers["authorization"] then return nil end
-    -- if last attempt didn't fail due to lack of authentication,
-    -- or we don't have authorization information, we can't retry
-    return code == 401 and reqt.user and reqt.password
-end
-
 local function shouldreceivebody(reqt, code)
     if reqt.method == "HEAD" then return nil end
     if code == 204 or code == 304 then return nil end
@@ -258,62 +255,70 @@ local function shouldreceivebody(reqt, code)
 end
 
 -- forward declarations
-local trequest, tauthorize, tredirect
-
-function tauthorize(reqt)
-    local auth = "Basic " ..  (mime.b64(reqt.user .. ":" .. reqt.password))
-    reqt.headers["authorization"] = auth
-    return trequest(reqt)
-end
+local trequest, tredirect
 
 function tredirect(reqt, location)
     local result, code, headers, status = trequest {
         -- the RFC says the redirect URL has to be absolute, but some
         -- servers do not respect that
-        url = url.absolute(reqt, location),
+        url = url.absolute(reqt.url, location),
         source = reqt.source,
         sink = reqt.sink,
         headers = reqt.headers,
-        proxy = reqt.proxy,
+        proxy = reqt.proxy, 
         nredirects = (reqt.nredirects or 0) + 1,
-        connect = reqt.connect
-    }
+        create = reqt.create
+    }   
     -- pass location header back as a hint we redirected
     headers.location = headers.location or location
     return result, code, headers, status
 end
 
 function trequest(reqt)
-    reqt = adjustrequest(reqt)
-    local h = open(reqt.host, reqt.port, reqt.create)
-    h:sendrequestline(reqt.method, reqt.uri)
-    h:sendheaders(reqt.headers)
-    if reqt.source then h:sendbody(reqt.headers, reqt.source, reqt.step) end
-    local code, headers, status
-    code, status = h:receivestatusline()
-    headers = h:receiveheaders()
-    if shouldredirect(reqt, code, headers) then
+    -- we loop until we get what we want, or
+    -- until we are sure there is no way to get it
+    local nreqt = adjustrequest(reqt)
+    local h = open(nreqt.host, nreqt.port, nreqt.create)
+    -- send request line and headers
+    h:sendrequestline(nreqt.method, nreqt.uri)
+    h:sendheaders(nreqt.headers)
+    local code = 100 
+    local headers, status
+    -- if there is a body, check for server status
+    if nreqt.source then
+        h:sendbody(nreqt.headers, nreqt.source, nreqt.step) 
+    end
+    -- ignore any 100-continue messages
+    while code == 100 do 
+        code, status = h:receivestatusline()
+        headers = h:receiveheaders()
+    end
+    -- at this point we should have a honest reply from the server
+    -- we can't redirect if we already used the source, so we report the error 
+    if shouldredirect(nreqt, code, headers) and not nreqt.source then
         h:close()
         return tredirect(reqt, headers.location)
-    elseif shouldauthorize(reqt, code) then
-        h:close()
-        return tauthorize(reqt)
-    elseif shouldreceivebody(reqt, code) then
-        h:receivebody(headers, reqt.sink, reqt.step)
+    end
+    -- here we are finally done
+    if shouldreceivebody(nreqt, code) then
+        h:receivebody(headers, nreqt.sink, nreqt.step)
     end
     h:close()
     return 1, code, headers, status
 end
 
-local function srequest(u, body)
+local function srequest(u, b)
     local t = {}
     local reqt = {
         url = u,
         sink = ltn12.sink.table(t)
     }
-    if body then
-        reqt.source = ltn12.source.string(body)
-        reqt.headers = { ["content-length"] = string.len(body) }
+    if b then
+        reqt.source = ltn12.source.string(b)
+        reqt.headers = {
+            ["content-length"] = string.len(b),
+            ["content-type"] = "application/x-www-form-urlencoded"
+        }
         reqt.method = "POST"
     end
     local code, headers, status = socket.skip(1, trequest(reqt))

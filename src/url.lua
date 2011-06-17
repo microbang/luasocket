@@ -2,7 +2,7 @@
 -- URI parsing, composition and relative URL resolution
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: url.lua,v 1.37 2005/11/22 08:33:29 diego Exp $
+-- RCS ID: $Id: url.lua,v 1.38 2006/04/03 04:45:42 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ module("socket.url")
 -----------------------------------------------------------------------------
 -- Module version
 -----------------------------------------------------------------------------
-_VERSION = "URL 1.0"
+_VERSION = "URL 1.0.1"
 
 -----------------------------------------------------------------------------
 -- Encodes a string into its escaped hexadecimal representation

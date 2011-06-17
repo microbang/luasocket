@@ -8,15 +8,15 @@
 * and formatting conforming to RFC 2045. It is used by mime.lua, which
 * provide a higher level interface to this functionality. 
 *
-* RCS ID: $Id: mime.h,v 1.13 2005/09/29 06:11:42 diego Exp $
+* RCS ID: $Id: mime.h,v 1.14 2006/04/03 04:45:42 diego Exp $
 \*=========================================================================*/
 #include "lua.h"
 
 /*-------------------------------------------------------------------------*\
 * Current MIME library version
 \*-------------------------------------------------------------------------*/
-#define MIME_VERSION    "MIME 1.0"
-#define MIME_COPYRIGHT  "Copyright (C) 2004-2005 Diego Nehab"
+#define MIME_VERSION    "MIME 1.0.1"
+#define MIME_COPYRIGHT  "Copyright (C) 2004-2006 Diego Nehab"
 #define MIME_AUTHORS    "Diego Nehab"
 
 /*-------------------------------------------------------------------------*\

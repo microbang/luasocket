@@ -2,7 +2,7 @@
 -- FTP support for the Lua language
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: ftp.lua,v 1.42 2005/11/22 08:33:29 diego Exp $
+-- RCS ID: $Id: ftp.lua,v 1.44 2006/03/14 09:04:15 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ PASSWORD = "anonymous@anonymous.org"
 local metat = { __index = {} }
 
 function open(server, port, create)
-    local tp = socket.try(tp.connect(server, port or PORT, create, TIMEOUT))
+    local tp = socket.try(tp.connect(server, port or PORT, TIMEOUT, create))
     local f = base.setmetatable({ tp = tp }, metat)
     -- make sure everything gets closed in an exception
     f.try = socket.newtry(function() f:close() end)
@@ -116,10 +116,11 @@ function metat.__index:send(sendt)
     if not self.pasvt then self:portconnect() end
     -- get the sink, source and step for the transfer
     local step = sendt.step or ltn12.pump.step
+    local readt = {self.tp.c}
     local checkstep = function(src, snk)
         -- check status in control connection while downloading
         local readyt = socket.select(readt, nil, 0)
-        if readyt[tp] then self.try(self.tp:check("2..")) end
+        if readyt[tp] then code = self.try(self.tp:check("2..")) end
         return step(src, snk)
     end
     local sink = socket.sink("close-when-done", self.data)

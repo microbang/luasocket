@@ -210,6 +210,11 @@ Use the <a href=tcp.html#settimeout><tt>settimeout</tt></a>
 method or <tt>accept</tt> might block forever.  
 </p>
 
+<p class=note>
+<b>Yet another note</b>: If you close a socket and pass
+it to <tt>select</tt>, it will be ignored.
+</p>
+
 <!-- sink ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
 <p class=name id=sink> 
@@ -388,7 +393,7 @@ This constant has a string describing the current LuaSocket version.
 <p>
 <small>
 Last modified by Diego Nehab on <br>
-Mon Nov 21 01:58:06 EST 2005
+Thu Apr 20 00:25:54 EDT 2006
 </small>
 </p>
 </center>

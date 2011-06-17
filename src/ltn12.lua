@@ -2,7 +2,7 @@
 -- LTN12 - Filters, sources, sinks and pumps.
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: ltn12.lua,v 1.30 2005/11/22 08:33:29 diego Exp $
+-- RCS ID: $Id: ltn12.lua,v 1.31 2006/04/03 04:45:42 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ pump = {}
 
 -- 2048 seems to be better in windows...
 BLOCKSIZE = 2048
+_VERSION = "LTN12 1.0.1"
 
 -----------------------------------------------------------------------------
 -- Filter stuff

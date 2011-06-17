@@ -2,7 +2,7 @@
 -- SMTP client support for the Lua language.
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: smtp.lua,v 1.44 2005/11/22 08:33:29 diego Exp $
+-- RCS ID: $Id: smtp.lua,v 1.45 2006/03/14 09:04:15 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ end
 
 function open(server, port, create)
     local tp = socket.try(tp.connect(server or SERVER, port or PORT,
-        create, TIMEOUT))
+        TIMEOUT, create))
     local s = base.setmetatable({tp = tp}, metat)
     -- make sure tp is closed if we get an exception
     s.try = socket.newtry(function()

@@ -6,15 +6,15 @@
 * Diego Nehab
 * 9/11/1999
 *
-* RCS ID: $Id: luasocket.h,v 1.23 2005/09/29 06:11:41 diego Exp $
+* RCS ID: $Id: luasocket.h,v 1.24 2006/04/03 04:45:42 diego Exp $
 \*=========================================================================*/
 #include "lua.h"
 
 /*-------------------------------------------------------------------------*\
 * Current socket library version
 \*-------------------------------------------------------------------------*/
-#define LUASOCKET_VERSION    "LuaSocket 2.0"
-#define LUASOCKET_COPYRIGHT  "Copyright (C) 2004-2005 Diego Nehab"
+#define LUASOCKET_VERSION    "LuaSocket 2.0.1"
+#define LUASOCKET_COPYRIGHT  "Copyright (C) 2004-2006 Diego Nehab"
 #define LUASOCKET_AUTHORS    "Diego Nehab"
 
 /*-------------------------------------------------------------------------*\
