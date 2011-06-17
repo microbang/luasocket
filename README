@@ -9,7 +9,7 @@ Files:
 
 Directories:
 
-    lua                     -- supported protocols implementation
+    lua                     -- supported protocols and modules
     examples                -- sample code
     test                    -- some of the automated test scripts
     html                    -- documentation

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+<title>LuaSocket: IPv4 Sockets support for the Lua language </title>
+<style type="text/css">
+ul { list-style-type: disc };
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<hr>
+
+<center>
+<table summary="LuaSocket logo" border=0 cellspacing=0 cellpadding=0>
+<tr><td align=center>
+<a href="http://www.lua.org">
+<img border=0 alt="LuaSocket" src="luasocket.png">
+</a>
+<tr><td align=center valign=top>IPv4 Sockets support for the Lua language
+</table>
+</center>
+
+<p align=center>
+<a href="home.html">home</a> &middot;
+<a href="home.html#down">download</a> &middot;
+<a href="home.html#whatis">what is</a> &middot;
+<a href="intro.html">introduction</a> &middot;
+<a href="func.html">functions</a> &middot;
+<a href="mod.html">modules</a> &middot;
+<a href="idx.html">index</a> 
+<p>
+
+<hr>
+
+<h2> Index </h2><p>
+
+<ul>
+<li> <a href="home.html#down">Download</a>
+<li> <a href="home.html#whatis">What is LuaSocket</a> 
+        <ul>
+        <li> <a href="home.html#old">Old Versions</a>
+        <li> <a href="home.html#current">Current Version</a>
+        <li><a href="home.html#new">What's New</a>
+     <li><a href="home.html#incompat">Incompatibilities with previous versions</a>
+        </ul>
+<li> <a href="intro.html">Introduction</a>
+        <ul>
+        <li><a href="intro.html#init">Initializing the library</a>
+        <li><a href="intro.html#prog">Network programming with LuaSocket</a>
+        </ul>
+<li> <a href="func.html">Function Reference</a>
+    <ul>
+    <li> <a href="func.html#tcp">TCP sockets</a>
+        <ul>
+        <li> <a href="func.html#tcp.accept">accept</a>
+        <li> <a href="func.html#tcp.bind">bind</a>
+        <li> <a href="func.html#tcp.close">close</a>
+        <li> <a href="func.html#tcp.connect">connect</a>
+        <li> <a href="func.html#tcp.getpeername">getpeername</a>
+        <li> <a href="func.html#tcp.getsockname">getsockname</a>
+        <li> <a href="func.html#tcp.receive">receive</a>
+        <li> <a href="func.html#tcp.select">select</a>
+        <li> <a href="func.html#tcp.send">send</a>
+        <li> <a href="func.html#tcp.timeout">timeout</a>
+        </ul>
+    <li> <a href="func.html#udp">UDP sockets</a>
+        <ul>
+        <li> <a href="func.html#udp.close">close</a>
+        <li> <a href="func.html#udp.getpeername">getpeername</a>
+        <li> <a href="func.html#udp.getsockname">getsockname</a>
+        <li> <a href="func.html#udp.receive">receive</a>
+        <li> <a href="func.html#udp.receivefrom">receivefrom</a>
+        <li> <a href="func.html#udp.select">select</a>
+        <li> <a href="func.html#udp.send">send</a>
+        <li> <a href="func.html#udp.sendto">sendto</a>
+        <li> <a href="func.html#udp.setpeername">setpeername</a>
+        <li> <a href="func.html#udp.setsockname">setsockname</a>
+        <li> <a href="func.html#udp.timeout">timeout</a>
+        <li> <a href="func.html#udp.udpsocket">udpsocket</a>
+        </ul>
+    <li> <a href="func.html#dns">DNS services</a>
+        <ul>
+        <li> <a href="func.html#dns.toip">toip</a>
+        <li> <a href="func.html#dns.tohostname">tohostname</a>
+        </ul>
+    </ul>
+<li> <a href="#proto">Protocol Reference</a>
+    <ul>
+    <li> <a href="mod.html#stream">Streaming with callbacks</a>
+        <ul>
+        <li> <a href="mod.html#receive_cb">receive_cb</a>
+        <li> <a href="mod.html#send_cb">send_cb</a>
+        </ul>
+    <li> <a href="mod.html#HTTP">HTTP</a>
+        <ul>
+        <li> <a href="mod.html#HTTP.get">HTTP.get</a>
+        <li> <a href="mod.html#HTTP.post">HTTP.post</a>
+        <li> <a href="mod.html#HTTP.request">HTTP.request</a>
+        <li> <a href="mod.html#HTTP.request_cb">HTTP.request_cb</a>
+        </ul>
+    <li> <a href="mod.html#FTP">FTP</a>
+        <ul>
+        <li> <a href="mod.html#FTP.get">FTP.get</a>
+        <li> <a href="mod.html#FTP.put">FTP.put</a>
+        <li> <a href="mod.html#FTP.get_cb">FTP.get_cb</a>
+        <li> <a href="mod.html#FTP.put_cb">FTP.put_cb</a>
+        </ul>
+    <li> <a href="mod.html#SMTP">SMTP</a>
+        <ul>
+        <li> <a href="mod.html#SMTP.mail">SMTP.mail</a>
+        <li> <a href="mod.html#cgilua.mail">CGILua mail</a>
+        </ul>
+    </ul>
+<li> <a href="mod.html#extra">Extra Modules Reference</a>
+    <ul>
+    <li> <a href="mod.html#URL">URL</a>
+        <ul>
+        <li> <a href="mod.html#URL.parse_url">URL.parse_url</a>
+        <li> <a href="mod.html#URL.build_url">URL.build_url</a>
+        <li> <a href="mod.html#URL.build_absolute">URL.build_absolute</a>
+        <li> <a href="mod.html#URL.parse_path">URL.parse_path</a>
+        <li> <a href="mod.html#URL.build_path">URL.build_path</a>
+        </ul>
+    <li> <a href="mod.html#Code">Code</a>
+        <ul>
+        <li> <a href="mod.html#Code.base64">Code.base64</a>
+        <li> <a href="mod.html#Code.unbase64">Code.unbase64</a>
+        <li> <a href="mod.html#Code.escape">Code.escape</a>
+        <li> <a href="mod.html#Code.unescape">Code.unescape</a>
+        <li> <a href="mod.html#Code.hexa">Code.hexa</a>
+        <li> <a href="mod.html#Code.unhexa">Code.unhexa</a>
+        </ul>
+    </ul>
+</ul>
+<br>
+
+<hr>
+<p align=center>
+<a href="home.html">home</a> &middot;
+<a href="home.html#down">download</a> &middot;
+<a href="home.html#whatis">what is</a> &middot;
+<a href="intro.html">introduction</a> &middot;
+<a href="func.html">functions</a> &middot;
+<a href="mod.html">modules</a> &middot;
+<a href="idx.html">index</a> 
+<p>
+
+<table summary="Best Viewed on Any Browser and Created with Vim" align=center>
+<tr> 
+<td align=center> <img alt="Created with Vim" src="vim.png">
+<td align=center> and
+<td align=center> <img alt="Best Viewed on Any Browser" src="anybrowser.png">
+<tr> <td colspan=3 align=center>
+<small>
+Last modified by Diego Nehab on <br>
+Thu Sep 27 16:18:27 EST 2001
+</small>
+</table>
+
+</body>
+</html>

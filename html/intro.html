@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+<title>LuaSocket: IPv4 Sockets support for the Lua language </title>
+<style type="text/css">
+ul { list-style-type: disc };
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<hr>
+
+<center>
+<table summary="LuaSocket logo" border=0 cellspacing=0 cellpadding=0>
+<tr><td align=center>
+<a href="http://www.lua.org">
+<img border=0 alt="LuaSocket" src="luasocket.png">
+</a>
+<tr><td align=center valign=top>IPv4 Sockets support for the Lua language
+</table>
+</center>
+
+<p align=center>
+<a href="home.html">home</a> &middot;
+<a href="home.html#down">download</a> &middot;
+<a href="home.html#whatis">what is</a> &middot;
+<a href="intro.html">introduction</a> &middot;
+<a href="func.html">functions</a> &middot;
+<a href="mod.html">modules</a> &middot;
+<a href="idx.html">index</a> 
+<p>
+
+<hr>
+
+<h2><a name=intro>Introduction</a></h2><p>
+
+Below is a little introduction on how  to get the library up and running
+with your applications and a  little introduction on network programming
+with LuaSocket.
+
+<h3><a name=init>Initializing the library</a></h3><p>
+
+To  have the  library  functions made  available to  a  Lua script,  the
+interpreter running the script must  be linked to the <tt>luasocket</tt>
+library, and  to whatever libraries  the OS  in use requires  for socket
+programming. The functions are registered in  the Lua state given as the
+parameter  to  the  function   <tt>lua_socketlibopen</tt>,  the  only  C
+function  exported  by  the  library.  The  scripts  can  then  use  all
+registered functions. <p>
+
+<h3> <a name=prog> Network programming with LuaSocket </a></h3><p>
+
+The network support  in the Lua language could closely  mirror the C API
+or  could implement  a  new, independent,  transport layer  abstraction.
+Having an API  similar to the C  API would make things  easier for those
+who are used to socket programming. On the other hand, the simplicity of
+the Lua language  would be lost. We ended up  with something in between,
+in the sense that function names and semantics have been copied from the
+C API  whenever possible, whereas  their usage  in Lua has  been greatly
+simplified. <p>
+
+One of the  major differences in the created API  is the timeout control
+provided by the library. All I/O  operations are blocking by default. In
+other  words, the  <tt>send</tt>,  <tt>receive</tt> and  <tt>accept</tt>
+functions  will block  the  caller application  until  the operation  is
+completed (if ever). The application  can, however, specify upper limits
+on the time it can  be blocked by LuaSocket ("<tt>return</tt>" timeout),
+on  the time  LuaSocket can  be  blocked by  the OS  ("<tt>blocked</tt>"
+timeout) or a combination of the  two. Remember that each LuaSocket call
+performs several OS calls, so that the two timeout values are <i>not</i>
+equivalent. <p>
+
+Another major difference is the receive pattern capability. Applications
+can read  data from a  TCP client socket line  by line, chunk  by chunk,
+until the connection  is closed etc. All I/O reads  are buffered and the
+performance difference between different receive patterns is negligible.
+<p>
+
+Finally,  host  name  resolution   is  transparent,  meaning  that  most
+functions accept both  IP addresses and host names. In  case a host name
+is  given, the  library  queries the  system's  resolver  and tries  all
+returned IP addresses  until one succeeds or all fail.  IP addresses are
+directly encoded and are therefore more efficient. The <tt>toip</tt> and
+<tt>tohostname</tt> functions are provided to convert between host names
+and IP addresses. <p>
+
+Socket objects are represented as  tables in the Lua language. Different
+socket types accept different operations. These operations are available
+both as stand-alone global functions and  as table methods of the socket
+objects    (i.e.    the    calls   <tt>send(sock,    "test")</tt>    and
+<tt>sock:send("test")</tt>  are  equivalent). It  is  considered  better
+style to  use the table  method versions,  which are also  slightly more
+efficient. <p>
+
+<a name=TCPprog><b>TCP</b></a><p>
+
+TCP (Transfer  Control Protocol) is  reliable stream protocol.  In other
+words, applications communicating through TCP  can send and receive data
+as  an  error free  stream  of  bytes. Data  is  split  in one  end  and
+reassembled transparently on  the other end. There are  no boundaries in
+the  data transfers.  The library  allows users  to read  data from  the
+sockets in  several different granularity: patterns  are available for
+words, lines, arbitrary sized blocks  or "read up to connection closed",
+all with similar performance. <p>
+
+The library distinguishes  two types of TCP sockets:  client sockets and
+server sockets. <p>
+
+Client sockets are  used to exchange data between  two applications over
+the Internet. Client sockets are  created by the <tt>connect</tt> global
+function  or  returned  by  the <tt>accept</tt>  server  socket  method.
+Applications can call the  methods <tt>send</tt> and <tt>receive</tt> to
+send and  receive data.  The other methods  available for  client socket
+objects are <tt>getsockname</tt>, <tt>getpeername</tt>, <tt>timeout</tt>
+and <tt>close</tt>.<p>
+
+Server sockets are created by  the <tt>bind</tt> global function and are
+associated with a  address and port on the local  host. Applications use
+the <tt>accept</tt> server socket method to wait for a client connection
+on a  server socket. Once a  connection is established, a  client socket
+object  is  returned representing  this  connection.  The other  methods
+available   for   server   socket  objects   are   <tt>getsockname</tt>,
+<tt>timeout</tt> and <tt>close</tt>. <p>
+
+Example: <br>
+<blockquote>
+A simple echo server, using LuaSocket. The program binds to an ephemeral
+port (one that is chosen by the  operating system) on the local host and
+awaits client connections on that port. When a connection is established,
+the program reads a line from the  remote end and sends it back, closing
+the  connection immediately  after. You  can  test it  using the  telnet
+program. <p>
+
+<pre>
+server, err = bind("*", 0)
+assert(server, err)
+ip, port = server:getsockname()
+write("Please telnet to localhost on port " .. port)
+while 1 do
+  client, err = server:accept()
+  client:timeout(10)
+  line, err = client:receive()
+  if not err then client:send(line .. "\n") end
+  client:close()
+end
+
+</pre>
+</blockquote>
+
+<a name=UDPprog><b>UDP</b></a><p>
+
+UDP (User  Datagram Protocol)  is a  non-reliable datagram  protocol. In
+other  words, applications  communication through  UDP send  and receive
+data as independent blocks, which are  not guaranteed to reach the other
+end. Even when they  reach the other end, they are  not guaranteed to be
+error free. Data  transfers are atomic, one datagram at  a time. Reading
+only  part of  a  datagram discards  the  rest, so  that  the next  read
+operation  will  act  on  the  next  datagram.  The  advantages  are  in
+simplicity (no connection  setup) and performance (no  error checking or
+error correction). <p>
+
+An UDP socket object is  created by the <tt>udpcreate</tt> function. UDP
+sockets  do   not  need   to  be  connected   before  use.   The  method
+<tt>sendto</tt>  can  be  used  immediately after  creation  to  send  a
+datagram to  any UDP  (ip, port)  pair. Host names  are not  allowed for
+performance reasons.  Methods <tt>receive</tt>  and <tt>receivefrom</tt>
+can be used to retrieve datagrams, the  latter returning the ip and port
+of  the  sender  as  extra  return  values  (thus  being  slightly  less
+efficient). <p>
+
+When  communication  is performed  repeatedly  with  a single  peer,  an
+application  should call  the <tt>setpeername</tt>  method to  specify a
+permanent partner.  The method  <tt>send</tt> can then  be used  to send
+data   directly  to   the   peer,  and   methods  <tt>receive</tt>   and
+<tt>receivefrom</tt> will  only return  datagrams originating  from that
+peer. There is about 30% performance gain due to this practice. <p>
+
+To associate  an UDP socket with  a local address, an  application calls
+the   <tt>setsockname</tt>   function.   Otherwise,    the   socket   is
+automatically  bound  to an  ephemeral  address  before the  first  data
+transmission.  The   other  methods   available  for  UDP   sockets  are
+<tt>getpeername</tt>,    <tt>getsockname</tt>,   <tt>timeout</tt>    and
+<tt>close</tt>. <p>
+
+Example: <br>
+<blockquote>
+A simple daytime client, using LuaSocket. The program connects to a remote
+server and tries to retrieve the daytime, printing the answer it got or an
+error message. <p>
+
+<pre>
+host = "localhost" -- change here to your remote hostname or ip address
+port = port or 13
+ip, err = toip(host)
+assert(ip, err)
+udp = udpsocket()
+err = udp:sendto("anything", ip, port)
+assert(not err, err)
+dgram, err = udp:receive()
+assert(dgram, err)
+write(dgram)
+
+</pre>
+</blockquote>
+
+<a name=DNSprog><b>DNS</b></a><p>
+
+DNS (Domain  Name System) is  the system that  maps host names  (such as
+'<tt>www.lua.org</tt>')  into their  associated  IP  addresses (such  as
+'<tt>200.255.249.234</tt>').  Domain names  were created  because humans
+find it easier to memorize words than numbers. Translation between names
+and numbers is performed  by an external service and is  not part of the
+TCP or UDP protocols. <p>
+
+UDP  and TCP  are  only concerned  with  IP addresses  ---  they do  not
+understand domain names. One of  the advantages of the LuaSocket library
+is  that in  most of  the cases  it automatically  performs domain  name
+lookup when needed.  However, since these translations have  a cost, the
+library provides two functions, <tt>toip</tt> and <tt>tohostname</tt> to
+perform explicit DNS translations in both ways. <p>
+
+<hr>
+<p align=center>
+<a href="home.html">home</a> &middot;
+<a href="home.html#down">download</a> &middot;
+<a href="home.html#whatis">what is</a> &middot;
+<a href="intro.html">introduction</a> &middot;
+<a href="func.html">functions</a> &middot;
+<a href="mod.html">modules</a> &middot;
+<a href="idx.html">index</a> 
+<p>
+
+<table summary="Best Viewed on Any Browser and Created with Vim" align=center>
+<tr> 
+<td align=center> <img alt="Created with Vim" src="vim.png">
+<td align=center> and
+<td align=center> <img alt="Best Viewed on Any Browser" src="anybrowser.png">
+<tr> <td colspan=3 align=center>
+<small>
+Last modified by Diego Nehab on <br>
+Thu Sep 27 16:18:27 EST 2001
+</small>
+</table>
+
+</body>
+</html>
