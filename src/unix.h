@@ -23,6 +23,6 @@ typedef struct t_unix_ {
 } t_unix;
 typedef t_unix *p_unix;
 
-int luaopen_socketunix(lua_State *L);
+int luaopen_socket_unix(lua_State *L);
 
 #endif /* UNIX_H */

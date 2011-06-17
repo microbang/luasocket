@@ -2,23 +2,13 @@ What's New
 
 This is just a bug-fix/update release.
 
-    * Updated: now using compat-5.1r5;
-
-    * Improved: http.request is more robust to malformed
-      URLs (Adrian Sietsma);
-
-    * Improved: the simple http.request interface sends a
-      "Content-type: application/x-www-form-urlencoded" header
-      (William Trenker);
-
-    * Improved: http.request is robust to evil servers that
-      send inappropriate 100-continue messages (David Burgess);
-
-    * Fixed: http.request was using the old host header during
-      redirects (Florian Berger);
-
-    * Fixed: sample unix.c had fallen through the cracks
-      during development (Matthew Percival);
-
-    * Fixed: error code was not being propagated correctly
-      in ftp.lua (David Burgess). 
+    * Improved: http.request() now supports deprecated HTTP/0.9
+      servers (Florian Berger)
+    * Fixed: could return "timedout" instead of "timeout" (Leo Leo)
+    * Fixed: crash when reading '*a' on closed socket (Paul Ducklin);
+    * Fixed: return values are consistent when reading from closed sockets;
+    * Fixed: case sensitivity in headers of multipart messages in 
+      smtp.message() (Graham Henstridge);
+    * Fixed a couple instances of error() being called instead of base.error().       These would cause an error when an error was reported. :)  (Ketmar Dark);
+    * Fixed: test script now uses pairs() iterator instead of the old 
+      Lua syntax (Robert Dodier).

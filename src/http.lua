@@ -2,7 +2,7 @@
 -- HTTP/1.1 client support for the Lua language.
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: http.lua,v 1.69 2006/04/13 07:00:24 diego Exp $
+-- RCS ID: $Id: http.lua,v 1.71 2007/10/13 23:55:20 diego Exp $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ local metat = { __index = {} }
 
 function open(host, port, create)
     -- create socket with user connect function, or with default
-    local c = socket.try(create or socket.tcp)()
+    local c = socket.try((create or socket.tcp)())
     local h = base.setmetatable({ c = c }, metat)
     -- create finalized try
     h.try = socket.newtry(function() h:close() end)
@@ -142,7 +142,12 @@ function metat.__index:sendbody(headers, source, step)
 end
 
 function metat.__index:receivestatusline()
-    local status = self.try(self.c:receive())
+    local status = self.try(self.c:receive(5))
+    -- identify HTTP/0.9 responses, which do not contain a status line
+    -- this is just a heuristic, but is what the RFC recommends
+    if status ~= "HTTP/" then return nil, status end
+    -- otherwise proceed reading a status line
+    status = self.try(self.c:receive("*l", status))
     local code = socket.skip(2, string.find(status, "HTTP/%d*%.%d* (%d%d%d)"))
     return self.try(base.tonumber(code), status)
 end
@@ -161,6 +166,12 @@ function metat.__index:receivebody(headers, sink, step)
     elseif base.tonumber(headers["content-length"]) then mode = "by-length" end
     return self.try(ltn12.pump.all(socket.source(mode, self.c, length),
         sink, step))
+end
+
+function metat.__index:receive09body(status, sink, step)
+    local source = ltn12.source.rewind(socket.source("until-closed", self.c))
+    source(status)
+    return self.try(ltn12.pump.all(source, sink, step))
 end
 
 function metat.__index:close()
@@ -228,7 +239,8 @@ local function adjustrequest(reqt)
     -- explicit components override url
     for i,v in base.pairs(reqt) do nreqt[i] = v end
     if nreqt.port == "" then nreqt.port = 80 end
-    socket.try(nreqt.host, "invalid host '" .. base.tostring(nreqt.host) .. "'")
+    socket.try(nreqt.host and nreqt.host ~= "", 
+        "invalid host '" .. base.tostring(nreqt.host) .. "'")
     -- compute uri if user hasn't overriden
     nreqt.uri = reqt.uri or adjusturi(nreqt)
     -- ajust host and port if there is a proxy
@@ -270,6 +282,7 @@ function tredirect(reqt, location)
         create = reqt.create
     }   
     -- pass location header back as a hint we redirected
+    headers = headers or {}
     headers.location = headers.location or location
     return result, code, headers, status
 end
@@ -282,17 +295,23 @@ function trequest(reqt)
     -- send request line and headers
     h:sendrequestline(nreqt.method, nreqt.uri)
     h:sendheaders(nreqt.headers)
-    local code = 100 
-    local headers, status
-    -- if there is a body, check for server status
+    -- if there is a body, send it
     if nreqt.source then
         h:sendbody(nreqt.headers, nreqt.source, nreqt.step) 
     end
+    local code, status = h:receivestatusline()
+    -- if it is an HTTP/0.9 server, simply get the body and we are done
+    if not code then
+        h:receive09body(status, nreqt.sink, nreqt.step)
+        return 1, 200
+    end
+    local headers
     -- ignore any 100-continue messages
     while code == 100 do 
-        code, status = h:receivestatusline()
         headers = h:receiveheaders()
+        code, status = h:receivestatusline()
     end
+    headers = h:receiveheaders()
     -- at this point we should have a honest reply from the server
     -- we can't redirect if we already used the source, so we report the error 
     if shouldredirect(nreqt, code, headers) and not nreqt.source then

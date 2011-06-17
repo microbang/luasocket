@@ -101,7 +101,7 @@ control:setoption("tcp-nodelay", true)
 
 ------------------------------------------------------------------------
 function test_methods(sock, methods)
-    for _, v in methods do
+    for _, v in pairs(methods) do
         if type(sock[v]) ~= "function" then 
             fail(sock.class .. " method '" .. v .. "' not registered") 
         end
@@ -498,7 +498,62 @@ remote(string.format([[
 end
 
 ------------------------------------------------------------------------
-
+function test_readafterclose()
+    local back, partial, err
+    local str = 'little string'
+    reconnect()
+    pass("trying repeated '*a' pattern")
+    remote (string.format ([[
+        data:send('%s')
+        data:close()
+        data = nil
+    ]], str))
+    back, err, partial = data:receive("*a")
+    assert(back == str, "unexpected data read")
+    back, err, partial = data:receive("*a")
+    assert(back == nil and err == "closed", "should have returned 'closed'")
+    print("ok")
+    reconnect()
+    pass("trying active close before '*a'")
+    remote (string.format ([[
+        data:close()
+        data = nil
+    ]]))
+    data:close() 
+    back, err, partial = data:receive("*a")
+    assert(back == nil and err == "closed", "should have returned 'closed'")
+    print("ok")
+    reconnect()
+    pass("trying active close before '*l'")
+    remote (string.format ([[
+        data:close()
+        data = nil
+    ]]))
+    data:close() 
+    back, err, partial = data:receive()
+    assert(back == nil and err == "closed", "should have returned 'closed'")
+    print("ok")
+    reconnect()
+    pass("trying active close before raw 1")
+    remote (string.format ([[
+        data:close()
+        data = nil
+    ]]))
+    data:close() 
+    back, err, partial = data:receive(1)
+    assert(back == nil and err == "closed", "should have returned 'closed'")
+    print("ok")
+    reconnect()
+    pass("trying active close before raw 0")
+    remote (string.format ([[
+        data:close()
+        data = nil
+    ]]))
+    data:close() 
+    back, err, partial = data:receive(0)
+    assert(back == nil and err == "closed", "should have returned 'closed'")
+    print("ok")
+end
 
 test("method registration")
 test_methods(socket.tcp(), {
@@ -540,6 +595,9 @@ test_methods(socket.udp(), {
     "setsockname",
     "settimeout"
 })
+
+test("testing read after close")
+test_readafterclose()
 
 test("select function")
 test_selectbugs()
