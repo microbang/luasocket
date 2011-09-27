@@ -71,6 +71,43 @@ int socket_waitfd(p_socket ps, int sw, p_timeout tm) {
 }
 #endif
 
+/*
+This file is "u"/unix_socket.c, and on UN*X, send/recv with flags == 0 is
+equivalent to write/read, except that they can only be used on socket
+descriptors. These macros replace them with the equivalent functions so the
+socket/buffer abstractions can be used on any unix stream devices  (serial
+lines, ttys, FIFOs, etc.).
+
+Unfortunately, the man pages lie. read() of zero always returns zero, whereas
+recv() or recvfrom() of zero on a socket that has a had non-blocking connect
+will return -1, ECONNREFUSED. I replaced recv() with recvfrom() in the connect
+wrapper to account for that. recv() is documented to be the same as recvfrom()
+with the srcaddr set to NULL, and behaves as documented.
+
+strace of problem below:
+
+socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 6
+fcntl64(6, F_GETFL)                     = 0x2 (flags O_RDWR)
+fcntl64(6, F_SETFL, O_RDWR|O_NONBLOCK)  = 0
+connect(6, {sa_family=AF_INET, sin_port=htons(1), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+poll([{fd=6, events=POLLIN|POLLOUT}], 1, -1) = 1 ([{fd=6, revents=POLLIN|POLLOUT|POLLERR|POLLHUP}])
+recv(6, 0xbfd9859c, 0, 0)               = -1 ECONNREFUSED (Connection refused)
+
+
+socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 6
+fcntl64(6, F_GETFL)                     = 0x2 (flags O_RDWR)
+fcntl64(6, F_SETFL, O_RDWR|O_NONBLOCK)  = 0
+connect(6, {sa_family=AF_INET, sin_port=htons(1), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+poll([{fd=6, events=POLLIN|POLLOUT}], 1, -1) = 1 ([{fd=6, revents=POLLIN|POLLOUT|POLLERR|POLLHUP}])
+read(6, "", 0)                          = 0
+
+Compile with USE_SENDRECV defined to get the old behaviour.
+*/
+#ifndef USE_SENDRECV
+# define send(fd, buf, len, flags) write(fd, buf, len)
+# define recv(fd, buf, len, flags) read(fd, buf, len)
+#endif
+
 
 /*-------------------------------------------------------------------------*\
 * Initializes module 
@@ -173,7 +210,7 @@ int socket_connect(p_socket ps, SA *addr, socklen_t len, p_timeout tm) {
     /* wait until we have the result of the connection attempt or timeout */
     err = socket_waitfd(ps, WAITFD_C, tm);
     if (err == IO_CLOSED) {
-        if (recv(*ps, (char *) &err, 0, 0) == 0) return IO_DONE;
+        if (recvfrom(*ps, (char *) &err, 0, 0, NULL, NULL) == 0) return IO_DONE;
         else return errno;
     } else return err;
 }
